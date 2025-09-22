@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — Venddu</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--danger:#dc2626;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:#0a0b0fd0;border-bottom:1px solid var(--border);backdrop-filter:blur(6px)}
+  .container{max-width:1150px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tag{color:#a1a1aa;font-size:13px;margin-top:2px}
+
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;color:#e5e7eb;font-size:12px}
+  .btn{cursor:pointer;border:1px solid #6b7280;background:transparent;color:#e5e7eb;border-radius:10px;padding:8px 12px}
+  .btn.primary{border-color:#22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff}
+  .btn.warn{border-color:#f59e0b55;background:linear-gradient(180deg,#f59e0b,#d97706);color:#fff}
+  .btn.danger{border-color:#ef444455;background:linear-gradient(180deg,#ef4444,#dc2626);color:#fff}
+  .btn.small{padding:6px 8px;font-size:12px}
+  input,select{background:#0e1016;border:1px solid var(--border);color:#f5f5f7;padding:8px 10px;border-radius:10px;outline:none}
+  input:focus,select:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px #2dd4bf22}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .tab{padding:8px 12px;border:1px solid var(--border);border-radius:10px;cursor:pointer}
+  .tab.active{background:#0e1016;font-weight:700}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #1c1d22;padding:10px 8px;text-align:left;vertical-align:top}
+  th{font-weight:700;color:#e2e8f0}
+  tbody tr:hover{background:#0f1218}
+
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#0ea5e933;border:1px solid #38bdf855}
+  .status{font-size:11px;padding:2px 6px;border-radius:999px;border:1px solid #fff2;background:#fff1;margin-left:6px}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+  footer{color:#9ca3af;font-size:12px;margin-top:18px;border-top:1px solid var(--border)}
+  .thumb{width:100px;height:68px;object-fit:cover;background:#0c0e13;border-radius:8px;border:1px solid #ffffff15}
+  .muted{color:#9ca3af}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Admin — Venddu</h1>
+        <div class="tag">Gerenciamento de anúncios (interno)</div>
+      </div>
+    </div>
+    <div class="row">
+      <a class="btn" href="index.html">← Site</a>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="margin-top:16px">
+  <!-- Tela de Login Admin -->
+  <section id="loginCard" class="card">
+    <div class="row" style="gap:14px">
+      <div class="pill">Acesso restrito</div>
+      <div class="muted">Informe o PIN de administrador para entrar.</div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <input id="adminPin" type="password" placeholder="PIN do administrador" />
+      <button class="btn primary" onclick="handleAdminLogin()">Entrar</button>
+    </div>
+    <div class="muted" style="margin-top:8px">Dica: edite o valor de <code>ADMIN_PIN</code> no código deste arquivo.</div>
+  </section>
+
+  <!-- Painel -->
+  <section id="panel" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="row" style="gap:8px">
+          <span id="cntTotal" class="badge">Total: 0</span>
+          <span id="cntAtivos" class="badge">Ativos: 0</span>
+          <span id="cntInativos" class="badge">Inativos: 0</span>
+          <span id="cntExpirados" class="badge">Expirados: 0</span>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn small" onclick="exportJSON()">Exportar JSON</button>
+          <label class="btn small" style="cursor:pointer">
+            Importar JSON
+            <input id="importFile" type="file" accept="application/json" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;gap:8px">
+        <div class="tabs">
+          <div id="tabTodos" class="tab active" onclick="setView('todos')">Todos</div>
+          <div id="tabAtivos" class="tab" onclick="setView('ativos')">Ativos</div>
+          <div id="tabInativos" class="tab" onclick="setView('inativos')">Inativos</div>
+          <div id="tabExpirados" class="tab" onclick="setView('expirados')">Expirados</div>
+        </div>
+        <input id="q" placeholder="Buscar: marca, modelo, cidade..." style="min-width:280px" oninput="render()"/>
+        <select id="sort" onchange="render()">
+          <option value="recentes">Mais recentes</option>
+          <option value="preco_asc">Preço: menor → maior</option>
+          <option value="preco_desc">Preço: maior → menor</option>
+          <option value="km_asc">Km: menor → maior</option>
+          <option value="km_desc">Km: maior → menor</option>
+          <option value="ano_desc">Ano: mais novo</option>
+          <option value="ano_asc">Ano: mais antigo</option>
+        </select>
+        <button class="btn" onclick="resetFilters()">Limpar</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Foto</th>
+            <th>Veículo</th>
+            <th>Cidade/UF</th>
+            <th>Preço</th>
+            <th>KM</th>
+            <th>Status</th>
+            <th>Criado em</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <footer class="container" style="padding:0">
+      <div class="row" style="justify-content:flex-end;margin:12px 0 8px">
+        <span class="muted">© <span id="year"></span> Venddu — Painel Admin</span>
+      </div>
+    </footer>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  /* ===== Config ===== */
+  const ADMIN_PIN = "torch9800"; // <<< ALTERE AQUI O PIN DO ADMIN
+  const DAYS_VALID=60;
+  const K_LISTINGS="ac_listings";
+
+  /* ===== Utils ===== */
+  const $=s=>document.querySelector(s);
+  const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const daysBetween=(a,b)=>Math.floor((b-a)/86400000);
+  const isExpired=it=>{const c=it.createdAt?Number(it.createdAt):Date.now();return daysBetween(c,Date.now())>DAYS_VALID};
+  const now=()=>Date.now();
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+  function loadCreated(){ try{return JSON.parse(localStorage.getItem(K_LISTINGS)||"[]")}catch{return []} }
+  function saveCreated(a){ localStorage.setItem(K_LISTINGS, JSON.stringify(a)) }
+  function firstImage(v){ if(v.images && v.images.length) return v.images[0]; if(v.img) return v.img; return "https://images.unsplash.com/photo-1549924231-f129b911e442" }
+
+  /* ===== Estado ===== */
+  let ADMIN_OK=false;
+  let VIEW="todos";
+
+  function handleAdminLogin(){
+    const pin=$("#adminPin").value.trim();
+    if(pin===ADMIN_PIN){
+      ADMIN_OK=true;
+      sessionStorage.setItem("ac_admin_ok","1");
+      $("#loginCard").style.display="none";
+      $("#panel").style.display="block";
+      renderCounters();
+      render();
+    }else{
+      toast("PIN inválido.", true);
+    }
+  }
+
+  function setView(v){
+    VIEW=v;
+    ["Todos","Ativos","Inativos","Expirados"].forEach(n=>$("#tab"+n).classList.remove("active"));
+    if(v==="todos") $("#tabTodos").classList.add("active");
+    if(v==="ativos") $("#tabAtivos").classList.add("active");
+    if(v==="inativos") $("#tabInativos").classList.add("active");
+    if(v==="expirados") $("#tabExpirados").classList.add("active");
+    render();
+  }
+
+  function resetFilters(){
+    $("#q").value="";
+    $("#sort").value="recentes";
+    render();
+  }
+
+  function renderCounters(){
+    const all=loadCreated();
+    const ativos   = all.filter(x=>x.active!==false && !isExpired(x)).length;
+    const expirados= all.filter(x=>isExpired(x)).length;
+    const inativos = all.filter(x=>x.active===false && !isExpired(x)).length;
+    $("#cntTotal").textContent    = `Total: ${all.length}`;
+    $("#cntAtivos").textContent   = `Ativos: ${ativos}`;
+    $("#cntInativos").textContent = `Inativos: ${inativos}`;
+    $("#cntExpirados").textContent= `Expirados: ${expirados}`;
+  }
+
+  function applyViewFilter(list){
+    if(VIEW==="ativos")   return list.filter(x=>x.active!==false && !isExpired(x));
+    if(VIEW==="inativos") return list.filter(x=>x.active===false && !isExpired(x));
+    if(VIEW==="expirados")return list.filter(x=>isExpired(x));
+    return list;
+  }
+
+  function render(){
+    if(!ADMIN_OK) return;
+    const q=$("#q").value.trim().toLowerCase();
+    const sort=$("#sort").value;
+    const all=loadCreated();
+    let res=all.slice();
+
+    // status
+    res = applyViewFilter(res);
+
+    // busca
+    if(q){
+      res = res.filter(v=>{
+        const txt=`${v.make} ${v.model} ${v.version||""} ${v.city} ${v.state} ${v.year}`.toLowerCase();
+        return txt.includes(q);
+      });
+    }
+
+    // ordenação
+    res.sort((a,b)=>{
+      if(sort==="preco_asc") return (a.price||0)-(b.price||0);
+      if(sort==="preco_desc") return (b.price||0)-(a.price||0);
+      if(sort==="km_asc") return (a.km||0)-(b.km||0);
+      if(sort==="km_desc") return (b.km||0)-(a.km||0);
+      if(sort==="ano_asc") return (a.year||0)-(b.year||0);
+      if(sort==="ano_desc") return (b.year||0)-(a.year||0);
+      const ca=+a.createdAt||0, cb=+b.createdAt||0; return cb-ca;
+    });
+
+    const rows=$("#rows");
+    rows.innerHTML = res.map(trHTML).join("") || `<tr><td colspan="8" class="muted">Nenhum anúncio encontrado.</td></tr>`;
+
+    renderCounters();
+  }
+
+  function trHTML(v){
+    const expired = isExpired(v);
+    const status = expired ? "Expirado" : (v.active!==false ? "Ativo" : "Inativo");
+    const created = v.createdAt ? new Date(v.createdAt).toLocaleString("pt-BR") : "—";
+    const link = `listing.html?id=${encodeURIComponent(v.id)}`;
+
+    return `<tr>
+      <td><img class="thumb" src="${firstImage(v)}" alt="thumb" onerror="this.src='https://images.unsplash.com/photo-1549924231-f129b911e442'"/></td>
+      <td>
+        <div><strong>${v.make||""} ${v.model||""} ${v.year||""}</strong></div>
+        <div class="muted">${v.version||""}</div>
+      </td>
+      <td>${v.city||""}/${(v.state||"").toUpperCase()}</td>
+      <td>${money(v.price||0)}</td>
+      <td>${(v.km||0).toLocaleString('pt-BR')} km</td>
+      <td>${status} ${expired?'<span class="status">Exp.</span>':(v.active!==false?'<span class="status">On</span>':'<span class="status">Off</span>')}</td>
+      <td>${created}</td>
+      <td>
+        <div class="row" style="gap:6px">
+          ${expired? `<button class="btn small warn" onclick="renew('${v.id}')">Renovar</button>`:''}
+          ${!expired && v.active!==false ? `<button class="btn small" onclick="deactivate('${v.id}')">Desativar</button>`:''}
+          ${!expired && v.active===false ? `<button class="btn small" onclick="activate('${v.id}')">Ativar</button>`:''}
+          <a class="btn small" href="${link}" target="_blank">Abrir</a>
+          <button class="btn small danger" onclick="removeAd('${v.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function findIndexById(arr,id){ return arr.findIndex(x=>x.id===id) }
+
+  function activate(id){
+    const list=loadCreated(); const i=findIndexById(list,id); if(i<0) return;
+    if(isExpired(list[i])){ toast("Expirado: use Renovar antes de ativar.", true); return; }
+    list[i].active = true;
+    saveCreated(list); toast("Anúncio ativado."); render();
+  }
+  function deactivate(id){
+    const list=loadCreated(); const i=findIndexById(list,id); if(i<0) return;
+    list[i].active = false;
+    saveCreated(list); toast("Anúncio desativado."); render();
+  }
+  function renew(id){
+    const list=loadCreated(); const i=findIndexById(list,id); if(i<0) return;
+    // renova: zera a expiração definindo createdAt = agora e marca como ativo
+    list[i].createdAt = now();
+    list[i].active = true;
+    saveCreated(list); toast("Anúncio renovado por mais 60 dias."); render();
+  }
+  function removeAd(id){
+    if(!confirm("Excluir este anúncio?")) return;
+    let list=loadCreated();
+    list = list.filter(x=>x.id!==id);
+    saveCreated(list); toast("Anúncio excluído."); render();
+  }
+
+  function exportJSON(){
+    const data = loadCreated();
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ac_listings_backup_${new Date().toISOString().slice(0,19)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  $("#importFile").addEventListener("change", async (e)=>{
+    const f=e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      const txt = await f.text();
+      const parsed = JSON.parse(txt);
+      if(!Array.isArray(parsed)) throw new Error("Formato inválido");
+      saveCreated(parsed);
+      toast("Base importada com sucesso.");
+      render();
+    }catch(err){
+      console.error(err);
+      toast("Falha ao importar JSON.", true);
+    }finally{
+      e.target.value="";
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", ()=>{
+    $("#year").textContent=new Date().getFullYear();
+    // Se já autenticado nesta aba/guia
+    ADMIN_OK = sessionStorage.getItem("ac_admin_ok")==="1";
+    if(ADMIN_OK){ $("#loginCard").style.display="none"; $("#panel").style.display="block"; renderCounters(); render(); }
+  });
+</script>
+</body>
+</html>

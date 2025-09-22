@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Venddu — Editar perfil</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:#0a0b0fd0;border-bottom:1px solid var(--border);backdrop-filter:blur(6px)}
+  .container{max-width:900px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tagline{color:#a1a1aa;font-size:13px;margin-top:2px}
+  .btn{cursor:pointer;border:1px solid #6b7280;color:#e5e7eb;background:transparent;border-radius:10px;padding:9px 12px}
+  .btn.primary{border-color:#22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;color:#e5e7eb;font-size:12px}
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px}
+  .form{display:grid;gap:12px}
+  .grid2{display:grid;gap:12px}
+  @media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+  .row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+  label{font-size:12px;color:#c9c9ce}
+  input,select,textarea{background:#0e1016;border:1px solid var(--border);color:#f5f5f7;padding:10px 12px;border-radius:10px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px #2dd4bf22}
+  .hint{font-size:12px;color:#a1a1aa}
+  .error{border-color:#ef4444!important}
+  .avatarWrap{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .avatar{width:84px;height:84px;border-radius:50%;border:1px solid #ffffff22;object-fit:cover;background:#0c0e13}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:16px;align-items:center;">
+    <a href="index.html" class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Venddu</h1>
+        <div class="tagline">Editar perfil</div>
+      </div>
+    </a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn" href="index.html">← Catálogo</a>
+      <a class="btn" href="account.html">Minha área</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <form id="profileForm" class="card form">
+    <div class="avatarWrap">
+      <img id="avatarPreview" class="avatar" alt="Avatar"/>
+      <div>
+        <label for="avatarFile">Foto do usuário (anexar imagem)</label>
+        <input id="avatarFile" type="file" accept="image/*"/>
+        <div class="hint">Se não anexar, usaremos a foto atual; caso não exista, será usado o avatar genérico.</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>CPF (fixo)</label>
+        <input id="cpf" disabled />
+      </div>
+      <div>
+        <label>Nome completo (fixo)</label>
+        <input id="nome" disabled />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>E-mail *</label>
+        <input id="email" type="email" required />
+      </div>
+      <div>
+        <label>Telefone (DDD + número) *</label>
+        <input id="fone" placeholder="(11) 91234-5678" maxlength="16" required />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Gênero *</label>
+        <select id="genero" required>
+          <option value="">Selecione…</option>
+          <option>Masculino</option>
+          <option>Feminino</option>
+          <option>Prefiro não dizer</option>
+        </select>
+      </div>
+      <div>
+        <label>Apelido (público nos anúncios) *</label>
+        <input id="apelido" maxlength="30" required />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Data de nascimento *</label>
+        <input id="nasc" type="date" required />
+      </div>
+      <div>
+        <label>CEP *</label>
+        <input id="cep" maxlength="9" required placeholder="00000-000" />
+      </div>
+    </div>
+
+    <div>
+      <label>Rua *</label>
+      <input id="rua" required />
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Número *</label>
+        <input id="numero" required />
+      </div>
+      <div>
+        <label>Complemento</label>
+        <input id="complemento" />
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Bairro *</label>
+        <input id="bairro" required />
+      </div>
+      <div>
+        <label>Cidade *</label>
+        <input id="cidade" required />
+      </div>
+    </div>
+
+    <div>
+      <label>Estado (UF) *</label>
+      <input id="uf" maxlength="2" required placeholder="SP" />
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn primary" type="submit">Salvar</button>
+      <a class="btn" href="account.html">Voltar</a>
+    </div>
+    <div class="hint">CPF e Nome completo não podem ser alterados depois do cadastro (somente via suporte).</div>
+  </form>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  // ======== Constantes e helpers
+  const GENERIC_AVATAR="https://www.gravatar.com/avatar/?d=mp&s=200";
+  const K_USERS="ac_users", K_SESSION="ac_session", K_PROFILE="ac_user_profile", K_PROFILES="ac_profiles";
+  const $=s=>document.querySelector(s);
+  const onlyDigits=v=>(v||"").replace(/\D/g,"");
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+
+  function loadUsers(){ try{return JSON.parse(localStorage.getItem(K_USERS)||"[]")}catch{return []} }
+  function saveUsers(u){ localStorage.setItem(K_USERS, JSON.stringify(u)) }
+  function currentUser(){ const id=localStorage.getItem(K_SESSION); if(!id) return null; return loadUsers().find(u=>u.id===id)||null }
+  function loadProfile(){ try{return JSON.parse(localStorage.getItem(K_PROFILE)||"null")}catch{return null} }
+  function saveProfile(p){ localStorage.setItem(K_PROFILE, JSON.stringify(p)) }
+  function loadProfiles(){ try{return JSON.parse(localStorage.getItem(K_PROFILES)||"{}")}catch{return {}} }
+  function saveProfiles(map){ localStorage.setItem(K_PROFILES, JSON.stringify(map)) }
+
+  function maskFone(el){ el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,11).replace(/^(\d{2})(\d)/,"($1) $2").replace(/(\d{5})(\d{4})$/,"$1-$2")}) }
+  function maskCep(el){ el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,8).replace(/(\d{5})(\d{1,3})$/,"$1-$2")}) }
+  function ufValida(v){ return /^[A-Za-z]{2}$/.test((v||"").trim()) }
+  function emailValido(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v||"").trim()) }
+  function maior18(dateStr){ const d=new Date(dateStr); if(isNaN(+d)) return false; const t=new Date(); let a=t.getFullYear()-d.getFullYear(); const m=t.getMonth()-d.getMonth(); if(m<0||(m===0&&t.getDate()<d.getDate())) a--; return a>=18 }
+
+  let avatarDataTemp = "";
+
+  async function fileToDataURL(file){
+    return new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=()=>resolve(r.result);
+      r.onerror=reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  function fillForm(){
+    const u = currentUser();
+    if(!u){
+      document.body.innerHTML = '<main class="container" style="padding:40px"><div class="card">Você não está logado. <a class="btn" href="index.html" style="margin-left:10px">Entrar</a></div></main>';
+      return;
+    }
+    // Busca perfil no mapa por userId; se não existir, cai para o legado K_PROFILE
+    const profiles = loadProfiles();
+    const p = profiles[u.id] || loadProfile() || {};
+
+    $("#cpf").value  = p.cpf_mask || (p.cpf||"");
+    $("#nome").value = p.nome || (u.name || "");
+    $("#email").value = p.email || (u.email || "");
+    $("#fone").value  = p.fone_mask || "";
+    $("#genero").value = p.genero || "";
+    $("#apelido").value = p.apelido || (u.name || "");
+    $("#nasc").value = p.nasc || "";
+    $("#cep").value  = p.cep_mask || "";
+    $("#rua").value  = p.rua || "";
+    $("#numero").value = p.numero || "";
+    $("#complemento").value = p.complemento || "";
+    $("#bairro").value = p.bairro || "";
+    $("#cidade").value = p.cidade || "";
+    $("#uf").value = p.uf || "";
+
+    const preview = $("#avatarPreview");
+    const src = (p.avatar && p.avatar.trim()) ? p.avatar : GENERIC_AVATAR;
+    preview.src = src;
+    preview.onerror = ()=>{ preview.src = GENERIC_AVATAR };
+  }
+
+  async function handleSave(e){
+    e.preventDefault();
+    const u = currentUser();
+    if(!u){ toast("Faça login para salvar o perfil.", true); return; }
+
+    const email = $("#email").value.trim().toLowerCase();
+    const fone  = $("#fone").value;
+    const genero = $("#genero").value;
+    const apelido = $("#apelido").value.trim();
+    const nasc = $("#nasc").value;
+    const cep = $("#cep").value;
+    const rua = $("#rua").value.trim();
+    const numero = $("#numero").value.trim();
+    const complemento = $("#complemento").value.trim();
+    const bairro = $("#bairro").value.trim();
+    const cidade = $("#cidade").value.trim();
+    const uf = $("#uf").value.trim().toUpperCase();
+
+    let ok = true;
+    const markErr = el => { el.classList.add("error"); ok=false };
+    document.querySelectorAll(".error").forEach(el=>el.classList.remove("error"));
+
+    if(!email || !emailValido(email)) markErr($("#email"));
+    const digF = onlyDigits(fone); if(!(digF.length===10||digF.length===11)) markErr($("#fone"));
+    if(!genero) markErr($("#genero"));
+    if(!apelido) markErr($("#apelido"));
+    if(!nasc || !maior18(nasc)) markErr($("#nasc"));
+    const digCEP = onlyDigits(cep); if(!(digCEP.length===8)) markErr($("#cep"));
+    if(!rua) markErr($("#rua"));
+    if(!numero) markErr($("#numero"));
+    if(!bairro) markErr($("#bairro"));
+    if(!cidade) markErr($("#cidade"));
+    if(!ufValida(uf)) markErr($("#uf"));
+
+    if(!ok){ toast("Verifique os campos destacados.", true); return; }
+
+    // recupera valores fixos de origem
+    const profiles = loadProfiles();
+    const prev = profiles[u.id] || loadProfile() || {};
+    const profile = {
+      cpf: prev.cpf || onlyDigits($("#cpf").value),
+      cpf_mask: prev.cpf_mask || $("#cpf").value,
+      nome: prev.nome || $("#nome").value,
+      email,
+      fone: digF,
+      fone_mask: fone,
+      genero,
+      apelido,
+      nasc,
+      cep: digCEP,
+      cep_mask: cep,
+      rua,
+      numero,
+      complemento,
+      bairro,
+      cidade,
+      uf,
+      locked: true,
+      avatar: avatarDataTemp ? avatarDataTemp : (prev.avatar || "")
+    };
+
+    // Salva no mapa de perfis por usuário
+    profiles[u.id] = profile;
+    saveProfiles(profiles);
+
+    // Também mantém compatibilidade com chave antiga (opcional)
+    saveProfile(profile);
+
+    // Atualiza também o e-mail no registro do usuário (coerência de login)
+    const users = loadUsers();
+    const me = users.find(x=>x.id===u.id);
+    if(me){
+      me.email = email;
+      me.name  = profile.nome;
+      saveUsers(users);
+    }
+
+    toast("Perfil salvo!");
+  }
+
+  document.addEventListener("DOMContentLoaded", ()=>{
+    fillForm();
+    $("#profileForm").addEventListener("submit", handleSave);
+    (function mask(){ maskFone($("#fone")); maskCep($("#cep")); })();
+    $("#avatarFile").addEventListener("change", async (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      if(!f.type.startsWith("image/")){ toast("Selecione uma imagem válida.", true); e.target.value=""; return; }
+      try{
+        const b64 = await fileToDataURL(f);
+        avatarDataTemp = b64;
+        $("#avatarPreview").src = b64;
+      }catch{ toast("Não foi possível ler a imagem.", true); e.target.value=""; }
+    });
+  });
+    (function(){
+    // Função que tenta abrir o modal de publicação localmente; se não houver, vai para index.html#publicar
+    const goPublish = () => {
+      try {
+        if (typeof openPublish === "function") { 
+          openPublish(); 
+          return;
+        }
+      } catch (e) {}
+      // fallback: abre o index com o hash para disparar o modal
+      window.location.href = "index.html#publicar";
+    };
+
+    // Liga os botões, se existirem na página
+    ["btnPublish", "btnPublishNow"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", goPublish);
+    });
+  })();
+</script>
+</body>
+</html>

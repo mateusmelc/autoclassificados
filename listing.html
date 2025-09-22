@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Venddu — Detalhe do anúncio</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:#0a0b0fd0;border-bottom:1px solid var(--border);backdrop-filter:blur(6px)}
+  .container{max-width:1100px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tagline{color:#a1a1aa;font-size:13px;margin-top:2px}
+  .btn{cursor:pointer;border:1px solid #6b7280;color:#e5e7eb;background:transparent;border-radius:10px;padding:9px 12px}
+  .btn.primary{border-color:#22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff}
+  .grid{display:grid;gap:18px;grid-template-columns:1.4fr .8fr}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .hero{aspect-ratio:16/10;width:100%;object-fit:cover;border-radius:10px;background:#0c0e13}
+  .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .thumb{width:96px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #ffffff22;background:#0c0e13;cursor:pointer;opacity:.9}
+  .thumb:hover{opacity:1}
+  .title{font-size:20px;margin:0}
+  .price{font-weight:800;font-size:22px}
+  .muted{color:#9ca3af}
+  .specs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .spec{border:1px solid var(--border);border-radius:10px;padding:8px;background:#0f1117}
+  .section h3{margin:0 0 8px 0;font-size:16px}
+  .seller{display:flex;gap:12px;align-items:center}
+  .avatar{width:56px;height:56px;border-radius:50%;border:1px solid #ffffff22;background:#0c0e13;object-fit:cover}
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#0ea5e933;border:1px solid #38bdf855}
+  .status{font-size:10px;padding:2px 6px;border-radius:999px;border:1px solid #fff2;background:#fff1;margin-left:6px}
+  .back{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:16px;align-items:center;">
+    <a href="index.html" class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Venddu</h1>
+        <div class="tagline">Detalhe do anúncio</div>
+      </div>
+    </a>
+    <div>
+      <a class="btn" href="index.html">← Voltar ao catálogo</a>
+      <a class="btn" href="account.html">Minha área</a>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="margin-top:16px">
+  <div class="back"><a class="btn" href="index.html">← Voltar</a> <span class="muted" id="crumb">Anúncio</span></div>
+
+  <div class="grid">
+    <!-- Coluna esquerda: galeria + descrição -->
+    <div class="card">
+      <img id="hero" class="hero" src="" alt="Foto do veículo"/>
+      <div id="thumbs" class="thumbs"></div>
+      <div class="section" style="margin-top:14px">
+        <h3>Descrição</h3>
+        <div id="desc" class="muted">—</div>
+      </div>
+    </div>
+
+    <!-- Coluna direita: info e vendedor -->
+    <div class="card">
+      <h2 id="title" class="title">—</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px">
+        <div id="price" class="price">—</div>
+        <div id="place" class="badge">—</div>
+      </div>
+      <div class="muted" id="meta">—</div>
+      <div id="status" class="muted" style="margin-top:6px"></div>
+
+      <div class="section" style="margin-top:14px">
+        <h3>Informações do veículo</h3>
+        <div class="specs">
+          <div class="spec"><strong>Marca</strong><br><span id="s_make" class="muted">—</span></div>
+          <div class="spec"><strong>Modelo</strong><br><span id="s_model" class="muted">—</span></div>
+          <div class="spec"><strong>Versão</strong><br><span id="s_version" class="muted">—</span></div>
+          <div class="spec"><strong>Ano</strong><br><span id="s_year" class="muted">—</span></div>
+          <div class="spec"><strong>Km</strong><br><span id="s_km" class="muted">—</span></div>
+          <div class="spec"><strong>ID</strong><br><span id="s_id" class="muted">—</span></div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:14px">
+        <h3>Anunciante</h3>
+        <div class="seller">
+          <img id="sellerAvatar" class="avatar" alt="Foto do anunciante" />
+          <div>
+            <div><strong id="sellerNick">—</strong></div>
+            <div class="muted" id="sellerDates">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  const GENERIC_AVATAR="https://www.gravatar.com/avatar/?d=mp&s=200";
+  const DAYS_VALID=60;
+  const K_LISTINGS="ac_listings";
+  const $=s=>document.querySelector(s);
+  const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const fmtDate=ts=>{const d=new Date(Number(ts||Date.now()));return d.toLocaleDateString("pt-BR")};
+  const daysBetween=(a,b)=>Math.floor((b-a)/86400000);
+  const isExpired=it=>{const c=it.createdAt?Number(it.createdAt):Date.now();return daysBetween(c,Date.now())>DAYS_VALID};
+  const isActive=it=>it.active!==false && !isExpired(it);
+
+  const SEED = [
+    {id:"1", make:"Honda", model:"Civic", version:"LXR 2.0 Flex", year:2016, km:78000, price:69990, city:"São Paulo", state:"SP",
+     images:[], img:"https://images.unsplash.com/photo-1549924231-f129b911e442", desc:"Carro bem cuidado.", active:true, createdAt: Date.now()- 15*86400000, sellerNick:"Loja Parceira"},
+    {id:"2", make:"Toyota", model:"Corolla", version:"XEI 2.0", year:2020, km:42000, price:112900, city:"Campinas", state:"SP",
+     images:[], img:"https://images.unsplash.com/photo-1549923746-c502d488b3ea", desc:"Ótimo estado.", active:true, createdAt: Date.now()- 5*86400000, sellerNick:"Loja Parceira"},
+    {id:"3", make:"Volkswagen", model:"Gol", version:"1.6 MSI", year:2015, km:98000, price:38900, city:"Curitiba", state:"PR",
+     images:[], img:"https://images.unsplash.com/photo-1524070960454-8f07a0527e59", desc:"Econômico.", active:true, createdAt: Date.now()- 50*86400000, sellerNick:"Loja Parceira"}
+  ];
+
+  function getParam(name){ return new URLSearchParams(location.search).get(name) }
+  function loadCreated(){ try{ return JSON.parse(localStorage.getItem(K_LISTINGS)||"[]") } catch { return [] } }
+  function allListings(){ return [...SEED, ...loadCreated()] }
+  function firstImage(v){ if(v.images&&v.images.length) return v.images[0]; if(v.img) return v.img; return "https://images.unsplash.com/photo-1549924231-f129b911e442" }
+
+  function render(){
+    const id = getParam("id");
+    const ad = allListings().find(x=>String(x.id)===String(id));
+    if(!ad){
+      document.body.innerHTML = '<main class="container" style="padding:40px"><div class="card">Anúncio não encontrado. <a class="btn" href="index.html" style="margin-left:10px">Voltar</a></div></main>';
+      return;
+    }
+
+    $("#title").textContent = ad.title || `${ad.make} ${ad.model} ${ad.year}`;
+    $("#price").textContent = money(ad.price);
+    $("#place").textContent = `${ad.city} • ${ad.state}`;
+    $("#meta").textContent = `${(ad.version||'')} ${(ad.version?'• ':'')}${(ad.km||0).toLocaleString('pt-BR')} km`;
+    $("#status").innerHTML = isActive(ad) ? '' : '<span class="status">Expirado</span>';
+
+    $("#s_make").textContent = ad.make || "—";
+    $("#s_model").textContent = ad.model || "—";
+    $("#s_version").textContent = ad.version || "—";
+    $("#s_year").textContent = ad.year || "—";
+    $("#s_km").textContent = (ad.km||0).toLocaleString("pt-BR");
+    $("#s_id").textContent = ad.id;
+    $("#desc").textContent = ad.desc || "Sem descrição informada.";
+
+    const pics = (ad.images && ad.images.length ? ad.images : (ad.img?[ad.img]:[]));
+    const hero = $("#hero");
+    hero.src = pics[0] || firstImage(ad);
+    hero.onerror = ()=> hero.src='https://images.unsplash.com/photo-1549924231-f129b911e442';
+
+    const thumbs = $("#thumbs");
+    thumbs.innerHTML = (pics.length ? pics : [firstImage(ad)]).map((src,i)=>`
+      <img class="thumb" src="${src}" alt="foto ${i+1}" onclick="document.getElementById('hero').src='${src}'" />
+    `).join("");
+
+    const nick = ad.sellerNick || "Anunciante";
+    const sellerCreated = ad.sellerUserCreatedAt ? fmtDate(ad.sellerUserCreatedAt) : "—";
+    const adCreated = ad.createdAt ? fmtDate(ad.createdAt) : "—";
+    $("#sellerNick").textContent = nick;
+    $("#sellerDates").textContent = `Anúncio de ${adCreated} • usuário desde ${sellerCreated}`;
+
+    const avatar = $("#sellerAvatar");
+    const src = (ad.sellerAvatar && ad.sellerAvatar.trim()) ? ad.sellerAvatar : GENERIC_AVATAR;
+    avatar.src = src;
+    avatar.onerror = ()=>{ avatar.src = GENERIC_AVATAR };
+
+    $("#crumb").textContent = `#${ad.id} • ${ad.make} ${ad.model} ${ad.year}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", render);
+    (function(){
+    // Função que tenta abrir o modal de publicação localmente; se não houver, vai para index.html#publicar
+    const goPublish = () => {
+      try {
+        if (typeof openPublish === "function") { 
+          openPublish(); 
+          return;
+        }
+      } catch (e) {}
+      // fallback: abre o index com o hash para disparar o modal
+      window.location.href = "index.html#publicar";
+    };
+
+    // Liga os botões, se existirem na página
+    ["btnPublish", "btnPublishNow"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", goPublish);
+    });
+  })();
+
+  (function(){
+    const goPublish = () => {
+      try {
+        if (typeof openPublish === "function") {
+          openPublish();
+          return;
+        }
+      } catch (e) {}
+      window.location.href = "index.html#publicar";
+    };
+
+    ["btnPublish","btnPublishNow"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", goPublish);
+    });
+  })();
+
+</script>
+</body>
+</html>

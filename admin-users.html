@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — Gestão de Usuários</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--danger:#dc2626;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:#0a0b0fd0;border-bottom:1px solid var(--border);backdrop-filter:blur(6px)}
+  .container{max-width:1200px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tag{color:#a1a1aa;font-size:13px;margin-top:2px}
+
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;color:#e5e7eb;font-size:12px}
+  .btn{cursor:pointer;border:1px solid #6b7280;background:transparent;color:#e5e7eb;border-radius:10px;padding:8px 12px}
+  .btn.primary{border-color:#22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff}
+  .btn.warn{border-color:#f59e0b55;background:linear-gradient(180deg,#f59e0b,#d97706);color:#fff}
+  .btn.danger{border-color:#ef444455;background:linear-gradient(180deg,#ef4444,#dc2626);color:#fff}
+  .btn.small{padding:6px 8px;font-size:12px}
+  input,select{background:#0e1016;border:1px solid var(--border);color:#f5f5f7;padding:8px 10px;border-radius:10px;outline:none}
+  input:focus,select:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px #2dd4bf22}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #1c1d22;padding:10px 8px;text-align:left;vertical-align:top}
+  th{font-weight:700;color:#e2e8f0}
+  tbody tr:hover{background:#0f1218}
+
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#0ea5e933;border:1px solid #38bdf855}
+  .muted{color:#9ca3af}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+  footer{color:#9ca3af;font-size:12px;margin-top:18px;border-top:1px solid var(--border)}
+
+  /* Modal */
+  .backdrop{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal{width:100%;max-width:780px;background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 40px #000a}
+  .modal .head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:12px 16px}
+  .modal .body{padding:16px}
+  .grid2{display:grid;gap:10px}
+  @media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+  .avatar{width:80px;height:80px;border-radius:50%;border:1px solid #ffffff22;object-fit:cover;background:#0c0e13}
+  .kv{display:grid;grid-template-columns:220px 1fr;gap:8px;border-bottom:1px dashed #202127;padding:8px 0}
+  .kv b{color:#cbd5e1}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Admin — Gestão de Usuários</h1>
+        <div class="tag">Painel interno (não público)</div>
+      </div>
+    </div>
+    <div class="row">
+      <a class="btn" href="index.html">← Site</a>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="margin-top:16px">
+  <!-- Login Admin -->
+  <section id="loginCard" class="card">
+    <div class="row" style="gap:14px">
+      <div class="pill">Acesso restrito</div>
+      <div class="muted">Informe o PIN de administrador para entrar.</div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <input id="adminPin" type="password" placeholder="PIN do administrador" />
+      <button class="btn primary" onclick="handleAdminLogin()">Entrar</button>
+    </div>
+    <div class="muted" style="margin-top:8px">Altere o valor de <code>ADMIN_PIN</code> no código.</div>
+  </section>
+
+  <!-- Painel -->
+  <section id="panel" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="row" style="gap:8px">
+          <span id="cntUsers" class="badge">Usuários: 0</span>
+          <span id="cntAds" class="badge">Anúncios: 0</span>
+          <span id="cntActiveAds" class="badge">Ativos: 0</span>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn small" onclick="exportUsers()">Exportar Usuários</button>
+          <button class="btn small" onclick="exportProfiles()">Exportar Perfis</button>
+          <label class="btn small" style="cursor:pointer">Importar Usuários
+            <input id="importUsers" type="file" accept="application/json" style="display:none">
+          </label>
+          <label class="btn small" style="cursor:pointer">Importar Perfis
+            <input id="importProfiles" type="file" accept="application/json" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;gap:8px">
+        <input id="q" placeholder="Buscar por nome, email ou CPF..." style="min-width:320px" oninput="render()"/>
+        <select id="sort" onchange="render()">
+          <option value="nome_asc">Nome (A→Z)</option>
+          <option value="nome_desc">Nome (Z→A)</option>
+          <option value="email_asc">Email (A→Z)</option>
+          <option value="created_desc"># Anúncios (maior)</option>
+          <option value="created_asc"># Anúncios (menor)</option>
+          <option value="active_desc"># Ativos (maior)</option>
+          <option value="favorite_desc"># Favoritos (maior)</option>
+        </select>
+        <button class="btn" onclick="resetFilters()">Limpar</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>CPF</th>
+            <th>Apelido</th>
+            <th># Anúncios</th>
+            <th># Ativos</th>
+            <th># Favoritos</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <footer class="container" style="padding:0">
+      <div class="row" style="justify-content:flex-end;margin:12px 0 8px">
+        <span class="muted">© <span id="year"></span> Venddu — Admin Usuários</span>
+      </div>
+    </footer>
+  </section>
+</main>
+
+<!-- Modal de Cadastro Completo -->
+<div id="viewModal" class="backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="head">
+      <strong>Cadastro do usuário</strong>
+      <button class="btn" onclick="closeView()">Fechar</button>
+    </div>
+    <div class="body">
+      <div class="row" style="align-items:center;gap:16px">
+        <img id="vm_avatar" class="avatar" alt="avatar"/>
+        <div>
+          <div><b id="vm_nome"></b> <span class="muted" id="vm_apelido"></span></div>
+          <div class="muted" id="vm_email"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="kv"><b>CPF</b><span id="vm_cpf"></span></div>
+        <div class="kv"><b>Gênero</b><span id="vm_genero"></span></div>
+        <div class="kv"><b>Data de nascimento</b><span id="vm_nasc"></span></div>
+        <div class="kv"><b>Telefone</b><span id="vm_fone"></span></div>
+        <div class="kv"><b>CEP</b><span id="vm_cep"></span></div>
+        <div class="kv"><b>Endereço</b><span id="vm_end"></span></div>
+        <div class="kv"><b>Cidade/UF</b><span id="vm_cidade"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  /* ===== Config ===== */
+  const ADMIN_PIN = "mude-este-pin-456"; // <<< ALTERE O PIN
+  const DAYS_VALID=60;
+  const K_USERS="ac_users", K_SESSION="ac_session", K_LISTINGS="ac_listings", K_PROFILES="ac_profiles";
+  const GENERIC_AVATAR="https://www.gravatar.com/avatar/?d=mp&s=200";
+
+  /* ===== Utils ===== */
+  const $=s=>document.querySelector(s);
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+  const daysBetween=(a,b)=>Math.floor((b-a)/86400000);
+  const isExpired=it=>{const c=it.createdAt?Number(it.createdAt):Date.now();return daysBetween(c,Date.now())>DAYS_VALID};
+  const isActive=it=>it.active!==false && !isExpired(it);
+  function loadUsers(){ try{return JSON.parse(localStorage.getItem(K_USERS)||"[]")}catch{return []} }
+  function saveUsers(u){ localStorage.setItem(K_USERS, JSON.stringify(u)) }
+  function loadListings(){ try{return JSON.parse(localStorage.getItem(K_LISTINGS)||"[]")}catch{return []} }
+  function saveListings(a){ localStorage.setItem(K_LISTINGS, JSON.stringify(a)) }
+  function loadProfiles(){ try{return JSON.parse(localStorage.getItem(K_PROFILES)||"{}")}catch{return {}} }
+  function saveProfiles(p){ localStorage.setItem(K_PROFILES, JSON.stringify(p)) }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m])) }
+
+  /* ===== Estado ===== */
+  let ADMIN_OK=false;
+
+  function handleAdminLogin(){
+    const pin=$("#adminPin").value.trim();
+    if(pin===ADMIN_PIN){
+      ADMIN_OK=true;
+      sessionStorage.setItem("ac_admin_users_ok","1");
+      $("#loginCard").style.display="none";
+      $("#panel").style.display="block";
+      renderCounters();
+      render();
+    }else{
+      toast("PIN inválido.", true);
+    }
+  }
+
+  function renderCounters(){
+    const users = loadUsers();
+    const ads = loadListings();
+    const active = ads.filter(isActive).length;
+    $("#cntUsers").textContent = `Usuários: ${users.length}`;
+    $("#cntAds").textContent = `Anúncios: ${ads.length}`;
+    $("#cntActiveAds").textContent = `Ativos: ${active}`;
+  }
+
+  function resetFilters(){
+    $("#q").value="";
+    $("#sort").value="nome_asc";
+    render();
+  }
+
+  function metricsForUser(u){
+    const ads = loadListings().filter(x=>x.authorId===u.id);
+    const active = ads.filter(isActive).length;
+    const favs = (u.favs||[]).length;
+    return {total: ads.length, active, favs};
+  }
+
+  function render(){
+    if(!ADMIN_OK) return;
+    const users = loadUsers().slice();
+    const profiles = loadProfiles();
+    const q = $("#q").value.trim().toLowerCase();
+    const sort = $("#sort").value;
+
+    let rows = users.map(u=>{
+      const m = metricsForUser(u);
+      const p = profiles[u.id] || null;
+      const cpf = p?.cpf_mask || p?.cpf || "";
+      const apelido = p?.apelido || "";
+      return { u, m, p, cpf, apelido };
+    });
+
+    if(q){
+      rows = rows.filter(({u,cpf})=>{
+        const name = (u.name||"").toLowerCase();
+        const email = (u.email||"").toLowerCase();
+        return name.includes(q) || email.includes(q) || (cpf||"").toLowerCase().includes(q);
+      });
+    }
+
+    rows.sort((A,B)=>{
+      const a=A.u, b=B.u;
+      const ma=A.m, mb=B.m;
+      if(sort==="nome_asc")  return (a.name||"").localeCompare(b.name||"");
+      if(sort==="nome_desc") return (b.name||"").localeCompare(a.name||"");
+      if(sort==="email_asc") return (a.email||"").localeCompare(b.email||"");
+      if(sort==="created_desc") return (mb.total)-(ma.total);
+      if(sort==="created_asc")  return (ma.total)-(mb.total);
+      if(sort==="active_desc")  return (mb.active)-(ma.active);
+      if(sort==="favorite_desc")return (mb.favs)-(ma.favs);
+      return 0;
+    });
+
+    $("#rows").innerHTML = rows.map(({u,m,p,cpf,apelido})=>trHTML(u,m,cpf,apelido,!!p)).join("") || `<tr><td colspan="8" class="muted">Nenhum usuário encontrado.</td></tr>`;
+    renderCounters();
+  }
+
+  function trHTML(u,m,cpf,apelido,hasProfile){
+    const safeName = escapeHtml(u.name||"—");
+    const safeEmail= escapeHtml(u.email||"—");
+    const safeCpf  = escapeHtml(cpf||"");
+    const safeNick = escapeHtml(apelido||"");
+    return `<tr>
+      <td><strong>${safeName}</strong></td>
+      <td>${safeEmail}</td>
+      <td>${safeCpf||'<span class="muted">(sem cadastro)</span>'}</td>
+      <td>${safeNick||'<span class="muted">—</span>'}</td>
+      <td>${m.total}</td>
+      <td>${m.active}</td>
+      <td>${m.favs}</td>
+      <td>
+        <div class="row" style="gap:6px">
+          <button class="btn small" onclick="viewProfile('${u.id}')">Ver cadastro</button>
+          <button class="btn small" onclick="impersonate('${u.id}')">Impersonar</button>
+          <button class="btn small warn" onclick="resetPassword('${u.id}')">Redefinir senha</button>
+          <button class="btn small" onclick="clearFavorites('${u.id}')">Limpar favoritos</button>
+          <button class="btn small danger" onclick="deleteUser('${u.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  // ========== Ações ==========
+  function impersonate(userId){
+    localStorage.setItem(K_SESSION, userId);
+    toast("Sessão trocada para o usuário.");
+    setTimeout(()=>{ location.href="account.html" }, 600);
+  }
+
+  function resetPassword(userId){
+    const users=loadUsers();
+    const i=users.findIndex(x=>x.id===userId);
+    if(i<0) return toast("Usuário não encontrado.", true);
+    const novo = prompt("Nova senha para o usuário:");
+    if(novo===null) return;
+    const pwd = String(novo).trim();
+    if(pwd.length<6){ toast("A senha deve ter ao menos 6 caracteres.", true); return; }
+    users[i].password = pwd;
+    saveUsers(users);
+    toast("Senha redefinida.");
+  }
+
+  function clearFavorites(userId){
+    const users=loadUsers();
+    const i=users.findIndex(x=>x.id===userId);
+    if(i<0) return toast("Usuário não encontrado.", true);
+    users[i].favs = [];
+    saveUsers(users);
+    toast("Favoritos limpos.");
+    render();
+  }
+
+  function deleteUser(userId){
+    if(!confirm("Excluir este usuário?")) return;
+    const alsoAds = confirm("Também deseja apagar TODOS os anúncios deste usuário?");
+    let users = loadUsers();
+    users = users.filter(x=>x.id!==userId);
+    saveUsers(users);
+
+    if(alsoAds){
+      let ads = loadListings();
+      ads = ads.filter(x=>x.authorId!==userId);
+      saveListings(ads);
+    }
+
+    // remove também o perfil armazenado
+    const profiles = loadProfiles();
+    if (profiles[userId]) {
+      delete profiles[userId];
+      saveProfiles(profiles);
+    }
+
+    if(localStorage.getItem(K_SESSION)===userId){
+      localStorage.removeItem(K_SESSION);
+    }
+
+    toast("Usuário excluído.");
+    render();
+  }
+
+  // ========== Ver cadastro (modal) ==========
+  function viewProfile(userId){
+    const users = loadUsers();
+    const u = users.find(x=>x.id===userId);
+    const profiles = loadProfiles();
+    const p = profiles[userId] || null;
+
+    $("#viewModal").style.display="flex";
+
+    const avatar = p?.avatar && p.avatar.trim() ? p.avatar : GENERIC_AVATAR;
+    $("#vm_avatar").src = avatar;
+    $("#vm_nome").textContent = (p?.nome || u?.name || "—");
+    $("#vm_apelido").textContent = p?.apelido ? `(@${p.apelido})` : "";
+    $("#vm_email").textContent = (p?.email || u?.email || "—");
+
+    $("#vm_cpf").textContent   = p?.cpf_mask || p?.cpf || "—";
+    $("#vm_genero").textContent= p?.genero || "—";
+    $("#vm_nasc").textContent  = p?.nasc || "—";
+    $("#vm_fone").textContent  = p?.fone_mask || p?.fone || "—";
+    $("#vm_cep").textContent   = p?.cep_mask || p?.cep || "—";
+
+    const end = p ? `${p.rua||""}${p.numero? ", "+p.numero:""}${p.complemento? " - "+p.complemento:""}${p.bairro? " — "+p.bairro:""}`.replace(/^, | — $/g,"") : "—";
+    $("#vm_end").textContent = end || "—";
+    $("#vm_cidade").textContent = p ? `${p.cidade||""}/${(p.uf||"").toUpperCase()}` : "—";
+  }
+
+  function closeView(){ $("#viewModal").style.display="none" }
+
+  // ========== Export/Import ==========
+  function exportUsers(){
+    const data = loadUsers();
+    downloadJSON(data, `ac_users_backup_${ts()}.json`);
+  }
+  function exportProfiles(){
+    const data = loadProfiles();
+    downloadJSON(data, `ac_profiles_backup_${ts()}.json`);
+  }
+  function downloadJSON(obj, filename){
+    const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function ts(){ return new Date().toISOString().slice(0,19) }
+
+  $("#importUsers").addEventListener("change", async (e)=>{
+    const f=e.target.files && e.target.files[0]; if(!f) return;
+    try{
+      const parsed = JSON.parse(await f.text());
+      if(!Array.isArray(parsed)) throw new Error("Esperado um array de usuários.");
+      const ok = parsed.every(u=>u && typeof u.id==="string" && "email" in u && "password" in u);
+      if(!ok) throw new Error("Alguns itens não têm campos mínimos (id, email, password).");
+      saveUsers(parsed);
+      toast("Usuários importados.");
+      render();
+    }catch(err){ console.error(err); toast("Falha ao importar usuários.", true) }
+    finally{ e.target.value="" }
+  });
+
+  $("#importProfiles").addEventListener("change", async (e)=>{
+    const f=e.target.files && e.target.files[0]; if(!f) return;
+    try{
+      const parsed = JSON.parse(await f.text());
+      if(Object(parsed)!==parsed) throw new Error("Esperado um objeto { userId: perfil }.");
+      saveProfiles(parsed);
+      toast("Perfis importados.");
+      render();
+    }catch(err){ console.error(err); toast("Falha ao importar perfis.", true) }
+    finally{ e.target.value="" }
+  });
+
+  // ===== Boot =====
+  document.addEventListener("DOMContentLoaded", ()=>{
+    $("#year").textContent=new Date().getFullYear();
+    const ok = sessionStorage.getItem("ac_admin_users_ok")==="1";
+    if(ok){ ADMIN_OK=true; $("#loginCard").style.display="none"; $("#panel").style.display="block"; renderCounters(); render(); }
+  });
+</script>
+</body>
+</html>

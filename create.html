@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Venddu — Criar Anúncio</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1100px;margin:0 auto;padding:20px}
+  header{border-bottom:1px solid var(--border);backdrop-filter:blur(6px);position:sticky;top:0;background:#0a0b0fd0;z-index:10}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  header .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tagline{color:#a1a1aa;font-size:13px;margin-top:2px}
+  .btn{cursor:pointer;border:1px solid #22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:white;font-weight:600;padding:10px 14px;border-radius:10px}
+  .btn.secondary{background:transparent;border-color:#6b7280;color:#e5e7eb}
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .title{padding:14px 16px;border-bottom:1px solid var(--border);font-weight:700}
+  form{padding:16px;display:grid;gap:12px}
+  .row{display:grid;gap:12px}
+  @media(min-width:820px){.row{grid-template-columns:1fr 1fr}}
+  label{font-size:12px;color:#c9c9ce}
+  input,select,textarea{background:#0e1016;border:1px solid var(--border);color:#f5f5f7;padding:10px 12px;border-radius:10px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px #2dd4bf22}
+  .hint{font-size:12px;color:#a1a1aa}
+  .error{border-color:#ef4444!important}
+  .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .gallery{display:flex;gap:10px;flex-wrap:wrap}
+  .thumb{width:110px;height:82px;border:1px dashed #ffffff33;border-radius:10px;overflow:hidden;position:relative;background:#0c0e13}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .thumb button{position:absolute;top:4px;right:4px}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:16px;align-items:center;">
+    <a href="index.html" class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Venddu</h1>
+        <div class="tagline">Criar anúncio</div>
+      </div>
+    </a>
+    <div class="right">
+      <a href="index.html" class="btn secondary">Voltar</a>
+      <a href="account.html" class="btn secondary">Minha área</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <div class="title">Novo anúncio</div>
+    <form id="adForm" onsubmit="event.preventDefault();saveAd();">
+      <div class="row">
+        <div class="field">
+          <label>Marca *</label>
+          <input id="f_make" required placeholder="Ex.: Honda" />
+        </div>
+        <div class="field">
+          <label>Modelo *</label>
+          <input id="f_model" required placeholder="Ex.: Civic" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Ano *</label>
+          <input id="f_year" type="number" min="1980" max="2035" required placeholder="Ex.: 2018" />
+        </div>
+        <div class="field">
+          <label>Quilometragem *</label>
+          <input id="f_km" type="number" min="0" step="1" required placeholder="Ex.: 45000" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Preço (R$) *</label>
+          <input id="f_price" type="number" min="500" step="100" required placeholder="Ex.: 75000" />
+        </div>
+        <div class="field">
+          <label>Título (opcional)</label>
+          <input id="f_title" placeholder="Ex.: Honda Civic LXR 2.0 2018" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Descrição (máx. 800 caracteres)</label>
+        <textarea id="f_desc" rows="5" maxlength="800" placeholder="Fale sobre estado, revisões, opcionais..."></textarea>
+        <div class="hint"><span id="descCount">0</span>/800</div>
+      </div>
+
+      <div class="field">
+        <label>Fotos (até 15 imagens)</label>
+        <input id="f_photos" type="file" accept="image/*" multiple />
+        <div id="gallery" class="gallery"></div>
+        <div class="hint">Dica: selecione várias imagens de uma vez. Tipos aceitos: JPG/PNG/HEIC, etc.</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="submit">Publicar anúncio</button>
+        <a class="btn secondary" href="index.html">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  /* ====== Storage Keys / Utils (iguais aos do projeto) ====== */
+  const K_USERS="ac_users", K_SESSION="ac_session", K_LISTINGS="ac_listings";
+  const $=s=>document.querySelector(s);
+  const uid=p=>(p||"i_")+Math.random().toString(36).slice(2,8)+Date.now().toString(36);
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+  const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  const loadUsers=()=>JSON.parse(localStorage.getItem(K_USERS)||"[]");
+  const currentUser=()=>{const id=localStorage.getItem(K_SESSION);return id? loadUsers().find(u=>u.id===id)||null : null}
+  const loadCreated=()=>JSON.parse(localStorage.getItem(K_LISTINGS)||"[]");
+  const saveCreated=a=>localStorage.setItem(K_LISTINGS,JSON.stringify(a));
+  function getProfile(userId){ try{ if(!userId) return null; return JSON.parse(localStorage.getItem(`ac_profile_${userId}`)||"null")}catch{return null} }
+
+  /* ====== Regras do produto ====== */
+  const MAX_PHOTOS = 15;
+  const DAYS_VALID = 60;
+  let images = [];
+
+  /* ====== Gate de Login ====== */
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const u = currentUser();
+    if(!u){
+      // sem login: volta ao index e pede login
+      alert("Você precisa estar logado para publicar.");
+      window.location.href = "index.html#publicar";
+      return;
+    }
+
+    // contador de descrição
+    $("#f_desc").addEventListener("input", e=>{
+      $("#descCount").textContent = e.target.value.length;
+    });
+
+    // handler de fotos
+    $("#f_photos").addEventListener("change", async (e)=>{
+      const files=[...e.target.files];
+      for(const f of files){
+        if(!f.type.startsWith("image/")) continue;
+        if(images.length >= MAX_PHOTOS){ toast(`Limite de ${MAX_PHOTOS} fotos atingido.`, true); break; }
+        const b64 = await fileToDataURL(f);
+        images.push(b64);
+      }
+      renderGallery();
+      e.target.value="";
+    });
+  });
+
+  const fileToDataURL=f=>new Promise((res,rej)=>{const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f)});
+
+  function renderGallery(){
+    const g=$("#gallery");
+    if(!images.length){ g.innerHTML=""; return; }
+    g.innerHTML = images.map((src,i)=>`
+      <div class="thumb">
+        <img src="${src}" alt="foto ${i+1}" />
+        <button type="button" class="btn secondary" onclick="removeImg(${i})">X</button>
+      </div>
+    `).join("");
+  }
+  window.removeImg = i => { images.splice(i,1); renderGallery(); };
+
+  function saveAd(){
+    const u = currentUser();
+    if(!u){ toast("Faça login para publicar.",true); return; }
+
+    const make = $("#f_make").value.trim();
+    const model = $("#f_model").value.trim();
+    const year = Number($("#f_year").value);
+    const km = Number($("#f_km").value);
+    const price = Number($("#f_price").value);
+    const title = $("#f_title").value.trim();
+    const desc = $("#f_desc").value.trim();
+
+    // validações básicas
+    let ok = true;
+    [["#f_make",!!make],["#f_model",!!model],["#f_year",!!year],["#f_km",km>=0],["#f_price",price>=500]].forEach(([sel,cond])=>{
+      const el=document.querySelector(sel);
+      if(!cond){ el.classList.add("error"); ok=false; } else { el.classList.remove("error"); }
+    });
+    if(!ok){ toast("Preencha os campos obrigatórios corretamente.",true); return; }
+
+    const prof = getProfile(u.id);
+    const sellerNick = prof?.apelido || u.name || "Vendedor";
+
+    const data = {
+      id: uid("c_"),
+      make, model, year, km, price,
+      title: title || `${make} ${model} ${year}`,
+      desc,
+      images: images.slice(0, MAX_PHOTOS),
+      authorId: u.id,
+      sellerNick,
+      active: true,
+      createdAt: Date.now()
+    };
+
+    const created = loadCreated();
+    created.push(data);
+    saveCreated(created);
+
+    toast("Anúncio publicado com sucesso!");
+    // redireciona para a página do anúncio (se tiver) ou para a conta
+    setTimeout(()=>{
+      // se você já tem listing.html?id=..., pode redirecionar assim:
+      window.location.href = `listing.html?id=${encodeURIComponent(data.id)}`;
+      // se ainda não tem detalhe por id, use:
+      // window.location.href = "account.html";
+    }, 900);
+  }
+</script>
+</body>
+</html>

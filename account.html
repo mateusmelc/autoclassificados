@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Venddu — Minha área</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:#0a0b0fd0;border-bottom:1px solid var(--border);backdrop-filter:blur(6px)}
+  .container{max-width:1100px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tagline{color:#a1a1aa;font-size:13px;margin-top:2px}
+  .btn{cursor:pointer;border:1px solid #6b7280;color:#e5e7eb;background:transparent;border-radius:10px;padding:9px 12px}
+  .btn.primary{border-color:#22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff}
+  .btn.warn{border-color:#f59e0b55;background:linear-gradient(180deg,#f59e0b,#d97706);color:#fff}
+  .btn.danger{border-color:#ef444455;background:linear-gradient(180deg,#ef4444,#dc2626);color:#fff}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;color:#e5e7eb;font-size:12px}
+
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .userBar{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .avatar{width:72px;height:72px;border-radius:50%;border:1px solid #ffffff22;object-fit:cover;background:#0c0e13}
+  .muted{color:#9ca3af}
+  .counts{display:flex;gap:10px;flex-wrap:wrap}
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#0ea5e933;border:1px solid #38bdf855}
+
+  .tabs{display:flex;gap:8px;margin-top:16px;margin-bottom:8px;flex-wrap:wrap}
+  .tab{padding:8px 12px;border:1px solid var(--border);border-radius:10px;cursor:pointer}
+  .tab.active{background:#0e1016;font-weight:700}
+
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .cardItem{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative}
+  .thumb{aspect-ratio:16/10;width:100%;object-fit:cover;background:#0c0e13}
+  .pad{padding:12px}
+  .line1{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .price{font-weight:800}
+  .status{font-size:10px;padding:2px 6px;border-radius:999px;border:1px solid #fff2;background:#fff1;margin-left:6px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .mini{padding:6px 8px;font-size:12px}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:16px;align-items:center;">
+    <a href="index.html" class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Venddu</h1>
+        <div class="tagline">Minha área</div>
+      </div>
+    </a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn" href="index.html">← Catálogo</a>
+      <a class="btn" href="profile.html">Editar perfil</a>
+      <a class="btn primary" href="index.html">Publicar novo</a>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="margin-top:16px">
+  <!-- Cabeçalho do usuário -->
+  <div class="card">
+    <div class="userBar">
+      <img id="userAvatar" class="avatar" alt="Foto do usuário"/>
+      <div style="flex:1;min-width:240px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <h2 id="userNick" style="margin:0">—</h2>
+          <span id="userEmail" class="muted">—</span>
+        </div>
+        <div class="counts" style="margin-top:6px">
+          <span id="cntFavs" class="badge">Favoritos: 0</span>
+          <span id="cntAds"  class="badge">Meus anúncios: 0</span>
+          <span id="cntActive" class="badge">Ativos: 0/2</span>
+        </div>
+      </div>
+      <span id="hello" class="pill">Olá!</span>
+    </div>
+  </div>
+
+  <!-- Abas -->
+  <div class="tabs">
+    <div id="tabFavs" class="tab active">Meus favoritos</div>
+    <div id="tabAds" class="tab">Meus anúncios</div>
+  </div>
+
+  <!-- Conteúdos -->
+  <section id="viewFavs" class="card">
+    <div id="gridFavs" class="grid"></div>
+  </section>
+
+  <section id="viewAds" class="card" style="display:none">
+    <div id="gridAds" class="grid"></div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  // ===== Constantes, storage e utilitários
+  const GENERIC_AVATAR="https://www.gravatar.com/avatar/?d=mp&s=200";
+  const DAYS_VALID=60;
+  const MAX_ACTIVE_BY_USER=2;
+  const MAX_TOTAL_BY_USER=5;
+  const K_USERS="ac_users", K_SESSION="ac_session", K_LISTINGS="ac_listings", K_PROFILE="ac_user_profile";
+  const $=s=>document.querySelector(s);
+  const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const daysBetween=(a,b)=>Math.floor((b-a)/86400000);
+  const isExpired=it=>{const c=it.createdAt?Number(it.createdAt):Date.now();return daysBetween(c,Date.now())>DAYS_VALID};
+  const isActive=it=>it.active!==false && !isExpired(it);
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+
+  function loadUsers(){ try{return JSON.parse(localStorage.getItem(K_USERS)||"[]")}catch{return []} }
+  function saveUsers(u){ localStorage.setItem(K_USERS, JSON.stringify(u)) }
+  function currentUser(){ const id=localStorage.getItem(K_SESSION); if(!id) return null; return loadUsers().find(u=>u.id===id)||null }
+  function loadProfile(){ try{return JSON.parse(localStorage.getItem(K_PROFILE)||"null")}catch{return null} }
+  function loadCreated(){ try{return JSON.parse(localStorage.getItem(K_LISTINGS)||"[]")}catch{return []} }
+  function saveCreated(a){ localStorage.setItem(K_LISTINGS, JSON.stringify(a)) }
+
+  // SEED do catálogo (igual ao index.html)
+  const SEED = [
+    {id:"1", make:"Honda", model:"Civic", version:"LXR 2.0 Flex", year:2016, km:78000, price:69990, city:"São Paulo", state:"SP",
+     images:[], img:"https://images.unsplash.com/photo-1549924231-f129b911e442", desc:"Carro bem cuidado.", active:true, createdAt: Date.now()- 15*86400000, sellerNick:"Loja Parceira"},
+    {id:"2", make:"Toyota", model:"Corolla", version:"XEI 2.0", year:2020, km:42000, price:112900, city:"Campinas", state:"SP",
+     images:[], img:"https://images.unsplash.com/photo-1549923746-c502d488b3ea", desc:"Ótimo estado.", active:true, createdAt: Date.now()- 5*86400000, sellerNick:"Loja Parceira"},
+    {id:"3", make:"Volkswagen", model:"Gol", version:"1.6 MSI", year:2015, km:98000, price:38900, city:"Curitiba", state:"PR",
+     images:[], img:"https://images.unsplash.com/photo-1524070960454-8f07a0527e59", desc:"Econômico.", active:true, createdAt: Date.now()- 50*86400000, sellerNick:"Loja Parceira"}
+  ];
+  function allListings(){ return [...SEED, ...loadCreated()] }
+
+  function firstImage(v){
+    if(v.images && v.images.length) return v.images[0];
+    if(v.img) return v.img;
+    return "https://images.unsplash.com/photo-1549924231-f129b911e442";
+  }
+
+  // ===== Helpers de contagem
+  function getUserActiveCount(userId, excludeId=null){
+    const created = loadCreated().filter(x=>x.authorId===userId);
+    return created.filter(x=>{
+      if(excludeId && x.id===excludeId) return false;
+      return isActive(x);
+    }).length;
+  }
+  function getUserTotalCount(userId){
+    return loadCreated().filter(x=>x.authorId===userId).length;
+  }
+
+  // ===== UI: abas
+  function switchTab(which){
+    const fav = which==="favs";
+    $("#tabFavs").classList.toggle("active", fav);
+    $("#tabAds" ).classList.toggle("active", !fav);
+    $("#viewFavs").style.display = fav? "block":"none";
+    $("#viewAds" ).style.display = fav? "none":"block";
+  }
+
+  // ===== Render principal
+  function renderUserHeader(){
+    const u = currentUser();
+    const p = loadProfile();
+    if(!u){
+      document.body.innerHTML = '<main class="container" style="padding:40px"><div class="card">Você não está logado. <a class="btn" href="index.html" style="margin-left:10px">Entrar</a></div></main>';
+      return false;
+    }
+    $("#userNick").textContent = p?.apelido || u.name || "Usuário";
+    $("#userEmail").textContent = u.email || "—";
+    const avatar = $("#userAvatar");
+    const src = (p && p.avatar && p.avatar.trim()) ? p.avatar : GENERIC_AVATAR;
+    avatar.src = src;
+    avatar.onerror = ()=>{ avatar.src = GENERIC_AVATAR };
+
+    const favCount = (u.favs||[]).length;
+    const myAds = loadCreated().filter(ad=>ad.authorId===u.id);
+    const activeCount = getUserActiveCount(u.id);
+    $("#cntFavs").textContent   = `Favoritos: ${favCount}`;
+    $("#cntAds").textContent    = `Meus anúncios: ${myAds.length} / 5`;
+    $("#cntActive").textContent = `Ativos: ${activeCount}/2`;
+    return true;
+  }
+
+  function cardFavHTML(v){
+    const link = `listing.html?id=${encodeURIComponent(v.id)}`;
+    return `<div class="cardItem">
+      <a href="${link}"><img class="thumb" src="${firstImage(v)}" alt="${v.make} ${v.model}" onerror="this.src='https://images.unsplash.com/photo-1549924231-f129b911e442'"/></a>
+      <div class="pad">
+        <div class="line1">
+          <strong>${v.make} ${v.model} ${v.year}</strong>
+          <span class="badge">${v.city} • ${v.state}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${(v.version||'')} • ${(v.km||0).toLocaleString('pt-BR')} km ${!isActive(v)?'<span class="status">Expirado</span>':''}</div>
+        <div class="price" style="margin-top:6px">${money(v.price)}</div>
+        <div class="actions">
+          <button class="btn mini" onclick="removeFavorite('${v.id}')">Remover dos favoritos</button>
+          <button class="btn mini" onclick="copyLink('${link}')">Copiar link</button>
+          <a class="btn mini" href="${link}">Abrir</a>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function cardMyAdHTML(v){
+    const link = `listing.html?id=${encodeURIComponent(v.id)}`;
+    const expired = isExpired(v);
+    const active = isActive(v);
+    const toggleLabel = active ? "Desativar" : "Ativar";
+    return `<div class="cardItem">
+      <a href="${link}"><img class="thumb" src="${firstImage(v)}" alt="${v.make} ${v.model}" onerror="this.src='https://images.unsplash.com/photo-1549924231-f129b911e442'"/></a>
+      <div class="pad">
+        <div class="line1">
+          <strong>${v.make} ${v.model} ${v.year}</strong>
+          <span class="badge">${v.city} • ${v.state}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">
+          ${(v.version||'')} • ${(v.km||0).toLocaleString('pt-BR')} km
+          ${expired?'<span class="status">Expirado</span>': (v.active!==false?'<span class="status">Ativo</span>':'<span class="status">Inativo</span>')}
+        </div>
+        <div class="price" style="margin-top:6px">${money(v.price)}</div>
+        <div class="actions">
+          <a class="btn mini" href="${link}">Ver anúncio</a>
+          <button class="btn mini" onclick="toggleActive('${v.id}')">${toggleLabel}</button>
+          <button class="btn mini danger" onclick="deleteAd('${v.id}')">Excluir</button>
+          <button class="btn mini" onclick="copyLink('${link}')">Copiar link</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderLists(){
+    const u = currentUser(); if(!u) return;
+    // Favoritos
+    const favIds = (u.favs||[]);
+    const all = allListings();
+    const favs = favIds.map(id=> all.find(x=>x.id===id)).filter(Boolean);
+    $("#gridFavs").innerHTML = favs.length ? favs.map(cardFavHTML).join("") : `<div class="muted">Você ainda não favoritou nenhum anúncio.</div>`;
+
+    // Meus Anúncios
+    const mine = loadCreated().filter(ad=>ad.authorId===u.id);
+    $("#gridAds").innerHTML = mine.length ? mine.map(cardMyAdHTML).join("") : `<div class="muted">Você ainda não publicou anúncios. Clique em <strong>Publicar novo</strong> no topo.</div>`;
+  }
+
+  // ===== Ações
+  function removeFavorite(id){
+    const users = loadUsers();
+    const u = currentUser(); if(!u) return;
+    const me = users.find(x=>x.id===u.id);
+    if(!me) return;
+    me.favs = (me.favs||[]).filter(x=>x!==id);
+    saveUsers(users);
+    toast("Removido dos favoritos");
+    renderUserHeader();
+    renderLists();
+  }
+
+  function deleteAd(id){
+    const u = currentUser(); if(!u){ toast("Faça login.", true); return; }
+    let created = loadCreated();
+    const ad = created.find(x=>x.id===id);
+    if(!ad || ad.authorId !== u.id){ toast("Você não pode excluir este anúncio.", true); return; }
+    if(!confirm("Tem certeza que deseja excluir este anúncio?")) return;
+
+    created = created.filter(x=>x.id!==id);
+    saveCreated(created);
+
+    const users = loadUsers();
+    const me = users.find(x=>x.id===u.id);
+    if(me && Array.isArray(me.created)){
+      me.created = me.created.filter(x=>x!==id);
+      saveUsers(users);
+    }
+
+    toast("Anúncio excluído.");
+    renderUserHeader();
+    renderLists();
+  }
+
+  function toggleActive(id){
+    const u = currentUser(); if(!u){ toast("Faça login.", true); return; }
+    const created = loadCreated();
+    const idx = created.findIndex(x=>x.id===id);
+    if(idx<0 || created[idx].authorId!==u.id){ toast("Operação não permitida.", true); return; }
+
+    const ad = created[idx];
+    const expired = isExpired(ad);
+
+    if(ad.active!==false && !expired){
+      // Estava ativo => desativar
+      created[idx].active = false;
+      saveCreated(created);
+      toast("Anúncio desativado.");
+    } else {
+      // Estava inativo/expirado => tentar ativar (não permite se expirado)
+      if(expired){
+        toast("Este anúncio está expirado (60 dias). Crie um novo.", true);
+        return;
+      }
+      const count = getUserActiveCount(u.id, ad.id);
+      if(count >= MAX_ACTIVE_BY_USER){
+        toast(`Você já tem ${MAX_ACTIVE_BY_USER} anúncios ativos. Desative outro para ativar este.`, true);
+        return;
+      }
+      created[idx].active = true;
+      saveCreated(created);
+      toast("Anúncio ativado.");
+    }
+
+    renderUserHeader();
+    renderLists();
+  }
+
+  async function copyLink(link){
+    try{
+      await navigator.clipboard.writeText(new URL(link, location.href).href);
+      toast("Link copiado!");
+    }catch{
+      toast("Não foi possível copiar o link.", true);
+    }
+  }
+
+  // ===== Boot
+  document.addEventListener("DOMContentLoaded", ()=>{
+    $("#tabFavs").addEventListener("click", ()=>switchTab("favs"));
+    $("#tabAds").addEventListener("click",  ()=>switchTab("ads"));
+
+    if(!renderUserHeader()) return;
+    renderLists();
+  });
+
+  (function(){
+    // Tenta usar openPublish() local; se não existir (página sem modal), redireciona para index.html#publicar
+    const goPublish = () => {
+      try {
+        if (typeof openPublish === "function") { 
+          openPublish();
+          return;
+        }
+      } catch (e) {}
+      // fallback: abre o index e aciona o modal por hash
+      window.location.href = "index.html#publicar";
+    };
+
+    // Liga ambos os botões, se existirem
+    ["btnPublish","btnPublishNow"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", goPublish);
+    });
+  })();
+</script>
+</body>
+</html>

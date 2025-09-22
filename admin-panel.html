@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — Painel Venddu</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--danger:#dc2626;--border:#1f2023}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:#0a0b0fd0;border-bottom:1px solid var(--border);backdrop-filter:blur(6px)}
+  .container{max-width:1220px;margin:0 auto;padding:16px 20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tag{color:#a1a1aa;font-size:13px;margin-top:2px}
+
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .btn{cursor:pointer;border:1px solid #6b7280;background:transparent;color:#e5e7eb;border-radius:10px;padding:8px 12px}
+  .btn.primary{border-color:#22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff}
+  .btn.warn{border-color:#f59e0b55;background:linear-gradient(180deg,#f59e0b,#d97706);color:#fff}
+  .btn.danger{border-color:#ef444455;background:linear-gradient(180deg,#ef4444,#dc2626);color:#fff}
+  .btn.small{padding:6px 8px;font-size:12px}
+  input,select{background:#0e1016;border:1px solid var(--border);color:#f5f5f7;padding:8px 10px;border-radius:10px;outline:none}
+  input:focus,select:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px #2dd4bf22}
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#0ea5e933;border:1px solid #38bdf855}
+  .muted{color:#9ca3af}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .tab{padding:8px 12px;border:1px solid var(--border);border-radius:10px;cursor:pointer}
+  .tab.active{background:#0e1016;font-weight:700}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #1c1d22;padding:10px 8px;text-align:left;vertical-align:top}
+  th{font-weight:700;color:#e2e8f0}
+  tbody tr:hover{background:#0f1218}
+
+  .status{font-size:11px;padding:2px 6px;border-radius:999px;border:1px solid #fff2;background:#fff1;margin-left:6px}
+  .thumb{width:100px;height:68px;object-fit:cover;background:#0c0e13;border-radius:8px;border:1px solid #ffffff15}
+
+  /* Modal genérico */
+  .backdrop{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal{width:100%;max-width:860px;background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 40px #000a}
+  .modal .head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:12px 16px}
+  .modal .body{padding:16px}
+  .grid2{display:grid;gap:10px}
+  @media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+  .avatar{width:80px;height:80px;border-radius:50%;border:1px solid #ffffff22;object-fit:cover;background:#0c0e13}
+  .kv{display:grid;grid-template-columns:220px 1fr;gap:8px;border-bottom:1px dashed #202127;padding:8px 0}
+  .kv b{color:#cbd5e1}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+
+  /* Form Editar Perfil (admin) */
+  label{font-size:12px;color:#c9c9ce}
+  .form-admin input,.form-admin select{width:100%}
+  .error{border-color:#ef4444!important}
+  .hint{font-size:12px;color:#a1a1aa}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Admin — Painel</h1>
+        <div class="tag">Uso interno (não público)</div>
+      </div>
+    </div>
+    <div class="row">
+      <a class="btn" href="index.html">← Site</a>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="margin-top:16px">
+  <!-- Login Admin -->
+  <section id="loginCard" class="card">
+    <div class="row" style="gap:14px">
+      <span class="badge">Acesso restrito</span>
+      <span class="muted">Informe o PIN de administrador para entrar.</span>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <input id="adminPin" type="password" placeholder="PIN do administrador" />
+      <button class="btn primary" onclick="handleAdminLogin()">Entrar</button>
+    </div>
+    <div class="muted" style="margin-top:8px">Altere o valor de <code>ADMIN_PIN</code> no código.</div>
+  </section>
+
+  <!-- Painel -->
+  <section id="panel" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="row" style="gap:8px">
+          <span id="cntUsers" class="badge">Usuários: 0</span>
+          <span id="cntAds" class="badge">Anúncios: 0</span>
+          <span id="cntActiveAds" class="badge">Ativos: 0</span>
+          <span id="cntExpired" class="badge">Expirados: 0</span>
+        </div>
+        <div class="row" style="gap:8px">
+          <button class="btn small" onclick="exportAll()">Backup Completo</button>
+          <label class="btn small" style="cursor:pointer">Restaurar Completo
+            <input id="importAll" type="file" accept="application/json" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div id="tabAds" class="tab active" onclick="switchTab('ads')">Anúncios</div>
+        <div id="tabUsers" class="tab" onclick="switchTab('users')">Usuários</div>
+      </div>
+    </div>
+
+    <!-- Aba Anúncios -->
+    <section id="adsPane" class="card" style="margin-top:12px">
+      <div class="row" style="gap:8px;margin-bottom:8px;align-items:end">
+        <div class="tabs" style="margin:0">
+          <div id="tabTodos" class="tab active" onclick="setAdsView('todos')">Todos</div>
+          <div id="tabAtivos" class="tab" onclick="setAdsView('ativos')">Ativos</div>
+          <div id="tabInativos" class="tab" onclick="setAdsView('inativos')">Inativos</div>
+          <div id="tabExpirados" class="tab" onclick="setAdsView('expirados')">Expirados</div>
+        </div>
+
+        <input id="qAds" placeholder="Buscar: marca, modelo, cidade..." style="min-width:280px" oninput="renderAds()"/>
+
+        <!-- Filtros UF / Cidade / Marca -->
+        <div>
+          <label for="fUf">UF</label>
+          <select id="fUf" onchange="onUfChange()"><option value="">Todas</option></select>
+        </div>
+        <div>
+          <label for="fCity">Cidade</label>
+          <select id="fCity" onchange="renderAds()"><option value="">Todas</option></select>
+        </div>
+        <div>
+          <label for="fMake">Marca</label>
+          <select id="fMake" onchange="renderAds()"><option value="">Todas</option></select>
+        </div>
+
+        <select id="sortAds" onchange="renderAds()">
+          <option value="recentes">Mais recentes</option>
+          <option value="preco_asc">Preço: menor → maior</option>
+          <option value="preco_desc">Preço: maior → menor</option>
+          <option value="km_asc">Km: menor → maior</option>
+          <option value="km_desc">Km: maior → menor</option>
+          <option value="ano_desc">Ano: mais novo</option>
+          <option value="ano_asc">Ano: mais antigo</option>
+        </select>
+        <button class="btn" onclick="resetAdsFilters()">Limpar</button>
+
+        <div class="row" style="margin-left:auto;gap:8px">
+          <button class="btn small" onclick="exportListings()">Exportar Anúncios</button>
+          <label class="btn small" style="cursor:pointer">Importar Anúncios
+            <input id="importListings" type="file" accept="application/json" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Foto</th>
+              <th>Veículo</th>
+              <th>Dono</th>
+              <th>Cidade/UF</th>
+              <th>Preço</th>
+              <th>KM</th>
+              <th>Status</th>
+              <th>Criado em</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="rowsAds"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Aba Usuários -->
+    <section id="usersPane" class="card" style="display:none;margin-top:12px">
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <input id="qUsers" placeholder="Buscar por nome, email ou CPF..." style="min-width:320px" oninput="renderUsers()"/>
+        <select id="sortUsers" onchange="renderUsers()">
+          <option value="nome_asc">Nome (A→Z)</option>
+          <option value="nome_desc">Nome (Z→A)</option>
+          <option value="email_asc">Email (A→Z)</option>
+          <option value="created_desc"># Anúncios (maior)</option>
+          <option value="created_asc"># Anúncios (menor)</option>
+          <option value="active_desc"># Ativos (maior)</option>
+          <option value="favorite_desc"># Favoritos (maior)</option>
+        </select>
+
+        <div class="row" style="margin-left:auto;gap:8px">
+          <button class="btn small" onclick="exportUsers()">Exportar Usuários</button>
+          <button class="btn small" onclick="exportProfiles()">Exportar Perfis</button>
+          <label class="btn small" style="cursor:pointer">Importar Usuários
+            <input id="importUsers" type="file" accept="application/json" style="display:none">
+          </label>
+          <label class="btn small" style="cursor:pointer">Importar Perfis
+            <input id="importProfiles" type="file" accept="application/json" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>CPF</th>
+              <th>Apelido</th>
+              <th># Anúncios</th>
+              <th># Ativos</th>
+              <th># Favoritos</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="rowsUsers"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="container" style="padding:0">
+      <div class="row" style="justify-content:flex-end;margin:12px 0 8px">
+        <span class="muted">© <span id="year"></span> Venddu — Painel Admin</span>
+      </div>
+    </footer>
+  </section>
+</main>
+
+<!-- Modal: Ver cadastro completo -->
+<div id="viewModal" class="backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="head">
+      <strong>Cadastro do usuário</strong>
+      <button class="btn" onclick="closeView()">Fechar</button>
+    </div>
+    <div class="body">
+      <div class="row" style="align-items:center;gap:16px">
+        <img id="vm_avatar" class="avatar" alt="avatar"/>
+        <div>
+          <div><b id="vm_nome"></b> <span class="muted" id="vm_apelido"></span></div>
+          <div class="muted" id="vm_email"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="kv"><b>CPF</b><span id="vm_cpf"></span></div>
+        <div class="kv"><b>Gênero</b><span id="vm_genero"></span></div>
+        <div class="kv"><b>Data de nascimento</b><span id="vm_nasc"></span></div>
+        <div class="kv"><b>Telefone</b><span id="vm_fone"></span></div>
+        <div class="kv"><b>CEP</b><span id="vm_cep"></span></div>
+        <div class="kv"><b>Endereço</b><span id="vm_end"></span></div>
+        <div class="kv"><b>Cidade/UF</b><span id="vm_cidade"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Editar cadastro (Admin) -->
+<div id="editModal" class="backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="head">
+      <strong>Editar cadastro do usuário (Admin)</strong>
+      <button class="btn" onclick="closeEdit()">Fechar</button>
+    </div>
+    <div class="body">
+      <form id="editForm" class="form-admin" onsubmit="return saveEditProfile(event)">
+        <div class="row" style="align-items:center">
+          <img id="ed_avatarPreview" class="avatar" alt="avatar"/>
+          <div>
+            <label for="ed_avatarFile">Avatar (imagem)</label>
+            <input id="ed_avatarFile" type="file" accept="image/*"/>
+            <div class="hint">Se não anexar, manteremos a foto atual; se não houver, usaremos o genérico.</div>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:10px">
+          <div>
+            <label>CPF *</label>
+            <input id="ed_cpf" maxlength="14" required />
+          </div>
+          <div>
+            <label>Nome completo *</label>
+            <input id="ed_nome" required />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>E-mail *</label>
+            <input id="ed_email" type="email" required />
+          </div>
+          <div>
+            <label>Telefone (DDD + número) *</label>
+            <input id="ed_fone" maxlength="16" required placeholder="(11) 91234-5678" />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Gênero *</label>
+            <select id="ed_genero" required>
+              <option value="">Selecione…</option>
+              <option>Masculino</option>
+              <option>Feminino</option>
+              <option>Prefiro não dizer</option>
+            </select>
+          </div>
+          <div>
+            <label>Apelido (público) *</label>
+            <input id="ed_apelido" maxlength="30" required />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Data de nascimento *</label>
+            <input id="ed_nasc" type="date" required />
+          </div>
+          <div>
+            <label>CEP *</label>
+            <input id="ed_cep" maxlength="9" required placeholder="00000-000" />
+          </div>
+        </div>
+
+        <div>
+          <label>Rua *</label>
+          <input id="ed_rua" required />
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Número *</label>
+            <input id="ed_numero" required />
+          </div>
+          <div>
+            <label>Complemento</label>
+            <input id="ed_complemento" />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>Bairro *</label>
+            <input id="ed_bairro" required />
+          </div>
+          <div>
+            <label>Cidade *</label>
+            <input id="ed_cidade" required />
+          </div>
+        </div>
+
+        <div>
+          <label>Estado (UF) *</label>
+          <input id="ed_uf" maxlength="2" required placeholder="SP" />
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn primary" type="submit">Salvar alterações</button>
+          <button class="btn" type="button" onclick="closeEdit()">Cancelar</button>
+        </div>
+
+        <input type="hidden" id="ed_userId"/>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Anúncios do usuário -->
+<div id="userAdsModal" class="backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="head">
+      <strong>Anúncios de <span id="ua_name"></span></strong>
+      <button class="btn" onclick="closeUserAds()">Fechar</button>
+    </div>
+    <div class="body" id="ua_body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  /* ===== Config ===== */
+  const ADMIN_PIN = "Torch9800!"; // <<< ALTERE O PIN
+  const DAYS_VALID=60;
+  const K_USERS="ac_users", K_SESSION="ac_session", K_LISTINGS="ac_listings", K_PROFILES="ac_profiles";
+  const GENERIC_AVATAR="https://www.gravatar.com/avatar/?d=mp&s=200";
+
+  /* ===== Utils ===== */
+  const $=s=>document.querySelector(s);
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+  const money=n=>Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const daysBetween=(a,b)=>Math.floor((b-a)/86400000);
+  const isExpired=it=>{const c=it.createdAt?Number(it.createdAt):Date.now();return daysBetween(c,Date.now())>DAYS_VALID};
+  const isActive=it=>it.active!==false && !isExpired(it);
+  const escapeHtml=s=>String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m]));
+  const onlyDigits=v=>(v||"").replace(/\D/g,"");
+
+  function loadUsers(){ try{return JSON.parse(localStorage.getItem(K_USERS)||"[]")}catch{return []} }
+  function saveUsers(u){ localStorage.setItem(K_USERS, JSON.stringify(u)) }
+  function loadListings(){ try{return JSON.parse(localStorage.getItem(K_LISTINGS)||"[]")}catch{return []} }
+  function saveListings(a){ localStorage.setItem(K_LISTINGS, JSON.stringify(a)) }
+  function loadProfiles(){ try{return JSON.parse(localStorage.getItem(K_PROFILES)||"{}")}catch{return {}} }
+  function saveProfiles(p){ localStorage.setItem(K_PROFILES, JSON.stringify(p)) }
+
+  function firstImage(v){ if(v.images && v.images.length) return v.images[0]; if(v.img) return v.img; return "https://images.unsplash.com/photo-1549924231-f129b911e442" }
+
+  // ===== CPF (módulo 11) =====
+  function cpfValido(cpf){
+    cpf=onlyDigits(cpf); if(cpf.length!==11) return false; if(/^(\d)\1+$/.test(cpf)) return false;
+    let s=0; for(let i=0;i<9;i++) s+=parseInt(cpf[i])*(10-i); let d1=(s*10)%11; if(d1===10) d1=0; if(d1!==parseInt(cpf[9])) return false;
+    s=0; for(let i=0;i<10;i++) s+=parseInt(cpf[i])*(11-i); let d2=(s*10)%11; if(d2===10) d2=0; return d2===parseInt(cpf[10]);
+  }
+  function maior18(dateStr){const d=new Date(dateStr); if(isNaN(+d)) return false; const t=new Date(); let a=t.getFullYear()-d.getFullYear(); const m=t.getMonth()-d.getMonth(); if(m<0||(m===0&&t.getDate()<d.getDate())) a--; return a>=18}
+  const emailValido=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v||"").trim());
+  const ufValida=v=>/^[A-Za-z]{2}$/.test((v||"").trim());
+
+  // ===== Estado =====
+  let ADMIN_OK=false;
+  let TAB="ads"; // ads | users
+  let ADS_VIEW="todos"; // todos | ativos | inativos | expirados
+
+  // filtros de anúncios
+  let UF_SET=[], CITY_SET=[], MAKE_SET=[];
+  const fUf=$("#fUf"), fCity=$("#fCity"), fMake=$("#fMake");
+
+  // ====== Login ======
+  function handleAdminLogin(){
+    const pin=$("#adminPin").value.trim();
+    if(pin===ADMIN_PIN){
+      ADMIN_OK=true;
+      sessionStorage.setItem("ac_admin_panel_ok","1");
+      $("#loginCard").style.display="none";
+      $("#panel").style.display="block";
+      $("#year").textContent=new Date().getFullYear();
+      buildFilterSets(); // popula UF/Cidade/Marca
+      refreshCounters();
+      renderAds();
+      renderUsers();
+    }else{
+      toast("PIN inválido.", true);
+    }
+  }
+
+  // ====== Abas ======
+  function switchTab(t){
+    TAB=t;
+    ["tabAds","tabUsers"].forEach(id=>$("#"+id).classList.remove("active"));
+    $("#tab"+(t==="ads"?"Ads":"Users")).classList.add("active");
+    $("#adsPane").style.display = t==="ads" ? "block" : "none";
+    $("#usersPane").style.display = t==="users" ? "block" : "none";
+    if(t==="ads") renderAds(); else renderUsers();
+  }
+
+  // ====== Contadores topo ======
+  function refreshCounters(){
+    const users = loadUsers();
+    const ads = loadListings();
+    const active = ads.filter(isActive).length;
+    const expired= ads.filter(isExpired).length;
+    $("#cntUsers").textContent = `Usuários: ${users.length}`;
+    $("#cntAds").textContent = `Anúncios: ${ads.length}`;
+    $("#cntActiveAds").textContent = `Ativos: ${active}`;
+    $("#cntExpired").textContent = `Expirados: ${expired}`;
+  }
+
+  // ====== Conjuntos filtro (UF/Cidade/Marca) ======
+  function buildFilterSets(){
+    const ads = loadListings();
+    const setUF = new Set(), setMake = new Set(), mapCityByUF={};
+    ads.forEach(v=>{
+      const uf=(v.state||"").toUpperCase().trim(); const city=(v.city||"").trim(); const make=(v.make||"").trim();
+      if(uf) setUF.add(uf);
+      if(make) setMake.add(make);
+      if(uf){
+        mapCityByUF[uf]=mapCityByUF[uf]||new Set();
+        if(city) mapCityByUF[uf].add(city);
+      }
+    });
+
+    UF_SET = Array.from(setUF).sort();
+    MAKE_SET = Array.from(setMake).sort();
+
+    // preenche UF
+    fUf.innerHTML = `<option value="">Todas</option>` + UF_SET.map(uf=>`<option value="${uf}">${uf}</option>`).join("");
+
+    // preenche Marca
+    fMake.innerHTML = `<option value="">Todas</option>` + MAKE_SET.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+
+    // cidades dependem do UF; salvar estrutura
+    window.__cityByUF = {};
+    for(const uf of Object.keys(mapCityByUF)){
+      window.__cityByUF[uf] = Array.from(mapCityByUF[uf]).sort();
+    }
+    populateCity(); // inicial
+  }
+
+  function populateCity(){
+    const uf = fUf.value.trim().toUpperCase();
+    const arr = uf ? (window.__cityByUF[uf]||[]) : []; // quando sem UF, mostramos "Todas" apenas
+    fCity.innerHTML = `<option value="">Todas</option>` + arr.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  }
+
+  function onUfChange(){
+    populateCity();
+    renderAds(); // re-filtra
+  }
+
+  function resetAdsFilters(){
+    $("#qAds").value="";
+    $("#sortAds").value="recentes";
+    fUf.value=""; populateCity();
+    fCity.value="";
+    fMake.value="";
+    renderAds();
+  }
+
+  function applyAdsView(list){
+    if(ADS_VIEW==="ativos")   return list.filter(x=>isActive(x));
+    if(ADS_VIEW==="inativos") return list.filter(x=>x.active===false && !isExpired(x));
+    if(ADS_VIEW==="expirados")return list.filter(x=>isExpired(x));
+    return list;
+  }
+
+  // ====== ADS ======
+  function setAdsView(v){
+    ADS_VIEW=v;
+    ["Todos","Ativos","Inativos","Expirados"].forEach(n=>$("#tab"+n).classList.remove("active"));
+    if(v==="todos") $("#tabTodos").classList.add("active");
+    if(v==="ativos") $("#tabAtivos").classList.add("active");
+    if(v==="inativos") $("#tabInativos").classList.add("active");
+    if(v==="expirados") $("#tabExpirados").classList.add("active");
+    renderAds();
+  }
+
+  function getOwnerInfo(authorId){
+    const users = loadUsers();
+    const profiles = loadProfiles();
+    const u = users.find(x=>x.id===authorId) || {};
+    const p = profiles[authorId] || {};
+    const nick = (p.apelido||"").trim();
+    const name = (p.nome||u.name||"(sem nome)").trim();
+    const email = (p.email||u.email||"").trim();
+    const display = nick ? nick : name;
+    return {name, nick, email, display};
+  }
+
+  function renderAds(){
+    if(!ADMIN_OK) return;
+    const q=$("#qAds").value.trim().toLowerCase();
+    const sort=$("#sortAds").value;
+    const uf=fUf.value.trim().toUpperCase();
+    const city=fCity.value.trim().toLowerCase();
+    const make=fMake.value.trim().toLowerCase();
+
+    let res = loadListings().slice();
+    res = applyAdsView(res);
+
+    // aplica filtros UF/Cidade/Marca
+    res = res.filter(v=>{
+      const vUF=(v.state||"").toUpperCase();
+      const vCity=(v.city||"").toLowerCase();
+      const vMake=(v.make||"").toLowerCase();
+      return (!uf || vUF===uf) && (!city || vCity===city) && (!make || vMake===make);
+    });
+
+    // busca texto
+    if(q){
+      res = res.filter(v=>{
+        const txt=`${v.make} ${v.model} ${v.version||""} ${v.city} ${v.state} ${v.year}`.toLowerCase();
+        return txt.includes(q);
+      });
+    }
+
+    // ordenação
+    res.sort((a,b)=>{
+      if(sort==="preco_asc") return (a.price||0)-(b.price||0);
+      if(sort==="preco_desc") return (b.price||0)-(a.price||0);
+      if(sort==="km_asc") return (a.km||0)-(b.km||0);
+      if(sort==="km_desc") return (b.km||0)-(a.km||0);
+      if(sort==="ano_asc") return (a.year||0)-(b.year||0);
+      if(sort==="ano_desc") return (b.year||0)-(a.year||0);
+      const ca=+a.createdAt||0, cb=+b.createdAt||0; return cb-ca;
+    });
+
+    $("#rowsAds").innerHTML = res.map(adRowHTML).join("") || `<tr><td colspan="9" class="muted">Nenhum anúncio encontrado.</td></tr>`;
+    refreshCounters();
+  }
+
+  function adRowHTML(v){
+    const expired = isExpired(v);
+    const status = expired ? "Expirado" : (v.active!==false ? "Ativo" : "Inativo");
+    const created = v.createdAt ? new Date(v.createdAt).toLocaleString("pt-BR") : "—";
+    const link = `listing.html?id=${encodeURIComponent(v.id)}`;
+    const owner = getOwnerInfo(v.authorId);
+    return `<tr>
+      <td><img class="thumb" src="${firstImage(v)}" alt="thumb" onerror="this.src='https://images.unsplash.com/photo-1549924231-f129b911e442'"/></td>
+      <td><div><strong>${escapeHtml(v.make||"")} ${escapeHtml(v.model||"")} ${escapeHtml(v.year||"")}</strong></div><div class="muted">${escapeHtml(v.version||"")}</div></td>
+      <td>${escapeHtml(owner.display||"")}</td>
+      <td>${escapeHtml(v.city||"")}/${escapeHtml((v.state||"").toUpperCase())}</td>
+      <td>${money(v.price||0)}</td>
+      <td>${(v.km||0).toLocaleString('pt-BR')} km</td>
+      <td>${status} ${expired?'<span class="status">Exp.</span>':(v.active!==false?'<span class="status">On</span>':'<span class="status">Off</span>')}</td>
+      <td>${created}</td>
+      <td>
+        <div class="row" style="gap:6px">
+          ${expired? `<button class="btn small warn" onclick="renewAd('${v.id}')">Renovar</button>`:''}
+          ${!expired && v.active!==false ? `<button class="btn small" onclick="deactivateAd('${v.id}')">Desativar</button>`:''}
+          ${!expired && v.active===false ? `<button class="btn small" onclick="activateAd('${v.id}')">Ativar</button>`:''}
+          <a class="btn small" href="${link}" target="_blank">Abrir</a>
+          <button class="btn small danger" onclick="deleteAd('${v.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function adIndexById(list,id){ return list.findIndex(x=>x.id===id) }
+  function activateAd(id){ const list=loadListings(); const i=adIndexById(list,id); if(i<0) return; if(isExpired(list[i])) return toast("Expirado: use Renovar.", true); list[i].active=true; saveListings(list); toast("Ativado."); renderAds() }
+  function deactivateAd(id){ const list=loadListings(); const i=adIndexById(list,id); if(i<0) return; list[i].active=false; saveListings(list); toast("Desativado."); renderAds() }
+  function renewAd(id){ const list=loadListings(); const i=adIndexById(list,id); if(i<0) return; list[i].createdAt=Date.now(); list[i].active=true; saveListings(list); toast("Renovado por 60 dias."); renderAds() }
+  function deleteAd(id){ if(!confirm("Excluir este anúncio?")) return; let list=loadListings(); list=list.filter(x=>x.id!==id); saveListings(list); toast("Excluído."); renderAds() }
+
+  function exportListings(){ const data=loadListings(); downloadJSON(data, `ac_listings_${ts()}.json`) }
+  $("#importListings").addEventListener("change", async (e)=>{
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    try{ const parsed=JSON.parse(await f.text()); if(!Array.isArray(parsed)) throw new Error("Esperado array."); saveListings(parsed); toast("Anúncios importados."); buildFilterSets(); renderAds(); }
+    catch(err){ console.error(err); toast("Falha ao importar anúncios.", true) }
+    finally{ e.target.value="" }
+  });
+
+  // ====== USERS ======
+  function renderUsers(){
+    if(!ADMIN_OK) return;
+    const users = loadUsers();
+    const profiles = loadProfiles();
+    const q = $("#qUsers").value.trim().toLowerCase();
+    const sort = $("#sortUsers").value;
+
+    let rows = users.map(u=>{
+      const ads = loadListings().filter(x=>x.authorId===u.id);
+      const m = { total: ads.length, active: ads.filter(isActive).length, favs: (u.favs||[]).length };
+      const p = profiles[u.id] || null;
+      const cpf = p?.cpf_mask || p?.cpf || "";
+      const apelido = p?.apelido || "";
+      return { u, m, p, cpf, apelido };
+    });
+
+    if(q){
+      rows = rows.filter(({u,cpf})=>{
+        const name=(u.name||"").toLowerCase(), email=(u.email||"").toLowerCase();
+        return name.includes(q) || email.includes(q) || (cpf||"").toLowerCase().includes(q);
+      });
+    }
+
+    rows.sort((A,B)=>{
+      const a=A.u,b=B.u; const ma=A.m,mb=B.m;
+      if(sort==="nome_asc")  return (a.name||"").localeCompare(b.name||"");
+      if(sort==="nome_desc") return (b.name||"").localeCompare(a.name||"");
+      if(sort==="email_asc") return (a.email||"").localeCompare(b.email||"");
+      if(sort==="created_desc") return (mb.total)-(ma.total);
+      if(sort==="created_asc")  return (ma.total)-(mb.total);
+      if(sort==="active_desc")  return (mb.active)-(ma.active);
+      if(sort==="favorite_desc")return (mb.favs)-(ma.favs);
+      return 0;
+    });
+
+    $("#rowsUsers").innerHTML = rows.map(({u,m,p,cpf,apelido})=>userRowHTML(u,m,cpf,apelido)).join("") || `<tr><td colspan="8" class="muted">Nenhum usuário encontrado.</td></tr>`;
+    refreshCounters();
+  }
+
+  function userRowHTML(u,m,cpf,apelido){
+    const safeName=escapeHtml(u.name||"—");
+    const safeEmail=escapeHtml(u.email||"—");
+    const safeCpf=escapeHtml(cpf||"");
+    const safeNick=escapeHtml(apelido||"");
+    return `<tr>
+      <td><strong>${safeName}</strong></td>
+      <td>${safeEmail}</td>
+      <td>${safeCpf||'<span class="muted">(sem cadastro)</span>'}</td>
+      <td>${safeNick||'<span class="muted">—</span>'}</td>
+      <td>
+        <button class="btn small" title="Ver anúncios do usuário" onclick="showUserAds('${u.id}')">${m.total}</button>
+      </td>
+      <td>${m.active}</td>
+      <td>${m.favs}</td>
+      <td>
+        <div class="row" style="gap:6px">
+          <button class="btn small" onclick="viewProfile('${u.id}')">Ver cadastro</button>
+          <button class="btn small" onclick="openEditProfile('${u.id}')">Editar cadastro</button>
+          <button class="btn small" onclick="showUserAds('${u.id}')">Anúncios</button>
+          <button class="btn small" onclick="impersonate('${u.id}')">Impersonar</button>
+          <button class="btn small warn" onclick="resetPassword('${u.id}')">Redefinir senha</button>
+          <button class="btn small" onclick="clearFavorites('${u.id}')">Limpar favoritos</button>
+          <button class="btn small danger" onclick="deleteUser('${u.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function impersonate(userId){ localStorage.setItem(K_SESSION, userId); toast("Sessão trocada para o usuário."); setTimeout(()=>location.href="account.html",600) }
+  function resetPassword(userId){
+    const users=loadUsers(); const i=users.findIndex(x=>x.id===userId); if(i<0) return toast("Usuário não encontrado.", true);
+    const novo=prompt("Nova senha para o usuário:"); if(novo===null) return; const pwd=String(novo).trim();
+    if(pwd.length<6) return toast("A senha deve ter ao menos 6 caracteres.", true);
+    users[i].password=pwd; saveUsers(users); toast("Senha redefinida.");
+  }
+  function clearFavorites(userId){
+    const users=loadUsers(); const i=users.findIndex(x=>x.id===userId); if(i<0) return toast("Usuário não encontrado.", true);
+    users[i].favs=[]; saveUsers(users); toast("Favoritos limpos."); renderUsers();
+  }
+  function deleteUser(userId){
+    if(!confirm("Excluir este usuário?")) return;
+    const alsoAds=confirm("Também deseja apagar TODOS os anúncios deste usuário?");
+    let users=loadUsers().filter(x=>x.id!==userId); saveUsers(users);
+    if(alsoAds){ let ads=loadListings().filter(x=>x.authorId!==userId); saveListings(ads) }
+    const profiles=loadProfiles(); if(profiles[userId]){ delete profiles[userId]; saveProfiles(profiles) }
+    if(localStorage.getItem(K_SESSION)===userId){ localStorage.removeItem(K_SESSION) }
+    toast("Usuário excluído."); renderUsers();
+  }
+
+  // Modal Ver cadastro
+  function viewProfile(userId){
+    const users=loadUsers(); const u=users.find(x=>x.id===userId)||{};
+    const p=loadProfiles()[userId] || null;
+    $("#viewModal").style.display="flex";
+    const avatar = p?.avatar && p.avatar.trim() ? p.avatar : GENERIC_AVATAR;
+    $("#vm_avatar").src = avatar;
+    $("#vm_nome").textContent = p?.nome || u.name || "—";
+    $("#vm_apelido").textContent = p?.apelido ? `(@${p.apelido})` : "";
+    $("#vm_email").textContent = p?.email || u.email || "—";
+    $("#vm_cpf").textContent   = p?.cpf_mask || p?.cpf || "—";
+    $("#vm_genero").textContent= p?.genero || "—";
+    $("#vm_nasc").textContent  = p?.nasc || "—";
+    $("#vm_fone").textContent  = p?.fone_mask || p?.fone || "—";
+    $("#vm_cep").textContent   = p?.cep_mask || p?.cep || "—";
+    const end = p ? `${p.rua||""}${p.numero? ", "+p.numero:""}${p.complemento? " - "+p.complemento:""}${p.bairro? " — "+p.bairro:""}`.replace(/^, | — $/g,"") : "—";
+    $("#vm_end").textContent = end || "—";
+    $("#vm_cidade").textContent = p ? `${p.cidade||""}/${(p.uf||"").toUpperCase()}` : "—";
+  }
+  function closeView(){ $("#viewModal").style.display="none" }
+
+  // ====== Editar cadastro (Admin) ======
+  let ed_avatarTemp = "";
+  function openEditProfile(userId){
+    const users=loadUsers(); const u=users.find(x=>x.id===userId)||{};
+    const profiles=loadProfiles(); const p=profiles[userId]||{};
+    $("#editModal").style.display="flex";
+    $("#ed_userId").value = userId;
+
+    // Avatar
+    const src = p.avatar && p.avatar.trim() ? p.avatar : GENERIC_AVATAR;
+    $("#ed_avatarPreview").src = src; ed_avatarTemp="";
+
+    // Campos
+    $("#ed_cpf").value = p.cpf_mask || p.cpf || "";
+    $("#ed_nome").value = p.nome || u.name || "";
+    $("#ed_email").value = p.email || u.email || "";
+    $("#ed_fone").value = p.fone_mask || "";
+    $("#ed_genero").value = p.genero || "";
+    $("#ed_apelido").value = p.apelido || "";
+    $("#ed_nasc").value = p.nasc || "";
+    $("#ed_cep").value = p.cep_mask || "";
+    $("#ed_rua").value = p.rua || "";
+    $("#ed_numero").value = p.numero || "";
+    $("#ed_complemento").value = p.complemento || "";
+    $("#ed_bairro").value = p.bairro || "";
+    $("#ed_cidade").value = p.cidade || "";
+    $("#ed_uf").value = p.uf || "";
+
+    // máscaras
+    maskCpf($("#ed_cpf"));
+    maskFone($("#ed_fone"));
+    maskCep($("#ed_cep"));
+  }
+  function closeEdit(){ $("#editModal").style.display="none" }
+
+  $("#ed_avatarFile").addEventListener("change", async (e)=>{
+    const f=e.target.files && e.target.files[0]; if(!f) return;
+    if(!f.type.startsWith("image/")){ toast("Selecione uma imagem válida.", true); e.target.value=""; return; }
+    try{
+      const b64=await fileToDataURL(f);
+      ed_avatarTemp=b64;
+      $("#ed_avatarPreview").src=b64;
+    }catch{ toast("Não foi possível ler a imagem.", true); e.target.value=""; }
+  });
+
+  function saveEditProfile(ev){
+    ev.preventDefault();
+    const id=$("#ed_userId").value;
+    const users=loadUsers();
+    const profiles=loadProfiles();
+    const prev=profiles[id]||{};
+
+    let cpfMask=$("#ed_cpf").value, cpf=onlyDigits(cpfMask);
+    let nome=$("#ed_nome").value.trim();
+    let email=$("#ed_email").value.trim().toLowerCase();
+    let foneMask=$("#ed_fone").value, fone=onlyDigits(foneMask);
+    let genero=$("#ed_genero").value;
+    let apelido=$("#ed_apelido").value.trim();
+    let nasc=$("#ed_nasc").value;
+    let cepMask=$("#ed_cep").value, cep=onlyDigits(cepMask);
+    let rua=$("#ed_rua").value.trim();
+    let numero=$("#ed_numero").value.trim();
+    let complemento=$("#ed_complemento").value.trim();
+    let bairro=$("#ed_bairro").value.trim();
+    let cidade=$("#ed_cidade").value.trim();
+    let uf=$("#ed_uf").value.trim().toUpperCase();
+
+    // validações
+    document.querySelectorAll("#editForm .error").forEach(el=>el.classList.remove("error"));
+    let ok=true; const e=(id)=>document.getElementById(id); const mark=id=>{e(id).classList.add("error"); ok=false};
+    if(!cpfValido(cpf)){ mark("ed_cpf") }
+    if(!nome) mark("ed_nome");
+    if(!email || !emailValido(email)) mark("ed_email");
+    if(!(fone.length===10||fone.length===11)) mark("ed_fone");
+    if(!genero) mark("ed_genero");
+    if(!apelido) mark("ed_apelido");
+    if(!nasc || !maior18(nasc)) mark("ed_nasc");
+    if(!(cep.length===8)) mark("ed_cep");
+    if(!rua) mark("ed_rua");
+    if(!numero) mark("ed_numero");
+    if(!bairro) mark("ed_bairro");
+    if(!cidade) mark("ed_cidade");
+    if(!ufValida(uf)) mark("ed_uf");
+    if(!ok){ toast("Verifique os campos destacados.", true); return false }
+
+    const profile={
+      cpf, cpf_mask:cpfMask, nome, email, fone, fone_mask:foneMask, genero, apelido, nasc,
+      cep, cep_mask:cepMask, rua, numero, complemento, bairro, cidade, uf,
+      locked:true, avatar: ed_avatarTemp ? ed_avatarTemp : (prev.avatar || "")
+    };
+
+    profiles[id]=profile; saveProfiles(profiles);
+
+    // sincroniza nome/email no ac_users
+    const ui=users.findIndex(x=>x.id===id);
+    if(ui>=0){ users[ui].name = nome; users[ui].email = email; saveUsers(users) }
+
+    toast("Cadastro atualizado.");
+    closeEdit();
+    renderUsers();
+    return false;
+  }
+
+  // Helpers de máscara/arquivo
+  function maskCpf(el){ el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,11).replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d{1,2})$/,"$1-$2")}) }
+  function maskFone(el){ el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,11).replace(/^(\d{2})(\d)/,"($1) $2").replace(/(\d{5})(\d{4})$/,"$1-$2")}) }
+  function maskCep(el){ el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,8).replace(/(\d{5})(\d{1,3})$/,"$1-$2")}) }
+  function fileToDataURL(file){ return new Promise((res,rej)=>{const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file)}); }
+
+  // ===== Modal Anúncios do usuário =====
+  function closeUserAds(){ document.getElementById("userAdsModal").style.display="none" }
+
+  function showUserAds(userId){
+    const users = loadUsers();
+    const profiles = loadProfiles();
+    const listings = loadListings().filter(x=>x.authorId===userId);
+
+    const u = users.find(x=>x.id===userId) || {};
+    const p = profiles[userId] || {};
+    const displayName = p.apelido || p.nome || u.name || "(usuário)";
+
+    const grupos = { ativos:[], inativos:[], expirados:[] };
+    listings.forEach(ad=>{
+      if(isExpired(ad)) grupos.expirados.push(ad);
+      else if(ad.active===false) grupos.inativos.push(ad);
+      else grupos.ativos.push(ad);
+    });
+
+    const item = ad => {
+      const title = `${ad.make||""} ${ad.model||""} ${ad.year||""}`.trim();
+      const link = `listing.html?id=${encodeURIComponent(ad.id)}`;
+      return `<li style="margin:6px 0;display:flex;gap:8px;align-items:center">
+        <img src="${firstImage(ad)}" class="thumb" alt="" onerror="this.src='https://images.unsplash.com/photo-1549924231-f129b911e442'"/>
+        <div style="flex:1">
+          <div><strong>${escapeHtml(title)}</strong></div>
+          <div class="muted">${escapeHtml(ad.city||"")}/${escapeHtml((ad.state||"").toUpperCase())} • ${(ad.km||0).toLocaleString('pt-BR')} km • ${money(ad.price||0)}</div>
+        </div>
+        <a class="btn small" target="_blank" href="${link}">Abrir</a>
+      </li>`;
+    };
+
+    const bloco = (titulo, arr) => `
+      <div class="card" style="margin:10px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>${titulo}</strong><span class="badge">${arr.length}</span>
+        </div>
+        ${arr.length ? `<ul style="list-style:none;padding:0;margin:8px 0 0 0">${arr.map(item).join("")}</ul>` : `<div class="muted" style="margin-top:6px">Nenhum anúncio.</div>`}
+      </div>
+    `;
+
+    document.getElementById("ua_name").textContent = displayName;
+    document.getElementById("ua_body").innerHTML =
+      bloco("Ativos", grupos.ativos) +
+      bloco("Inativos", grupos.inativos) +
+      bloco("Expirados", grupos.expirados);
+
+    document.getElementById("userAdsModal").style.display = "flex";
+  }
+
+  // ====== Backup/Restore geral ======
+  function exportAll(){
+    const data = {
+      users: loadUsers(),
+      profiles: loadProfiles(),
+      listings: loadListings()
+    };
+    downloadJSON(data, `ac_backup_completo_${ts()}.json`);
+  }
+  $("#importAll").addEventListener("change", async (e)=>{
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    try{
+      const parsed=JSON.parse(await f.text());
+      if(Object(parsed)!==parsed || !Array.isArray(parsed.users) || !Array.isArray(parsed.listings) || Object(parsed.profiles)!==parsed.profiles){
+        throw new Error("Estrutura inválida. Esperado {users[], profiles{}, listings[]}");
+      }
+      saveUsers(parsed.users); saveProfiles(parsed.profiles); saveListings(parsed.listings);
+      toast("Backup restaurado.");
+      buildFilterSets();
+      refreshCounters(); renderAds(); renderUsers();
+    }catch(err){ console.error(err); toast("Falha ao restaurar backup.", true) }
+    finally{ e.target.value="" }
+  });
+
+  function exportUsers(){ downloadJSON(loadUsers(), `ac_users_${ts()}.json`) }
+  function exportProfiles(){ downloadJSON(loadProfiles(), `ac_profiles_${ts()}.json`) }
+  function downloadJSON(obj, filename){ const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url) }
+  function ts(){ return new Date().toISOString().slice(0,19) }
+
+  // Imports específicos
+  $("#importUsers").addEventListener("change", async (e)=>{
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    try{
+      const parsed=JSON.parse(await f.text());
+      if(!Array.isArray(parsed)) throw new Error("Esperado array de usuários.");
+      const ok = parsed.every(u=>u && typeof u.id==="string" && "email" in u && "password" in u);
+      if(!ok) throw new Error("Itens sem campos mínimos (id, email, password).");
+      saveUsers(parsed); toast("Usuários importados."); renderUsers(); refreshCounters();
+    }catch(err){ console.error(err); toast("Falha ao importar usuários.", true) }
+    finally{ e.target.value="" }
+  });
+  $("#importProfiles").addEventListener("change", async (e)=>{
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    try{
+      const parsed=JSON.parse(await f.text());
+      if(Object(parsed)!==parsed) throw new Error("Esperado objeto de perfis {userId: perfil}");
+      saveProfiles(parsed); toast("Perfis importados."); renderUsers();
+    }catch(err){ console.error(err); toast("Falha ao importar perfis.", true) }
+    finally{ e.target.value="" }
+  });
+
+  // ===== Boot =====
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const ok = sessionStorage.getItem("ac_admin_panel_ok")==="1";
+    if(ok){ 
+      ADMIN_OK=true; 
+      $("#loginCard").style.display="none"; 
+      $("#panel").style.display="block"; 
+      $("#year").textContent=new Date().getFullYear(); 
+      buildFilterSets();
+      refreshCounters(); 
+      renderAds(); 
+      renderUsers(); 
+    }
+  });
+</script>
+</body>
+</html>

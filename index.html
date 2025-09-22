@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Venddu — Catálogo</title>
+<style>
+  :root{--bg:#0b0c10;--card:#111214;--muted:#b3b3b3;--text:#f5f5f7;--brand:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--border:#1f2023}
+  *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0a0b0f 0%,#0e1016 100%);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1100px;margin:0 auto;padding:20px}
+  header{border-bottom:1px solid var(--border);backdrop-filter:blur(6px);position:sticky;top:0;background:#0a0b0fd0;z-index:10}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  header .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#60a5fa)}
+  h1{font-size:20px;margin:0}.tagline{color:#a1a1aa;font-size:13px;margin-top:2px}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;color:#e5e7eb;font-size:12px}
+
+  .search{display:grid;gap:10px;margin-top:16px}
+  @media(min-width:1100px){.search{grid-template-columns:1.2fr 1fr 1fr 1fr 1fr 1fr 1fr}}
+  .field{display:flex;flex-direction:column;gap:6px}
+  label{font-size:12px;color:#c9c9ce}
+  input,select,button,textarea{background:#0e1016;border:1px solid var(--border);color:#f5f5f7;padding:10px 12px;border-radius:10px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px #2dd4bf22}
+  .actions{display:flex;gap:10px;align-items:end}
+  .btn{cursor:pointer;border:1px solid #22c55e55;background:linear-gradient(180deg,#22c55e,#16a34a);color:white;font-weight:600}
+  .btn.secondary{background:transparent;border-color:#6b7280;color:#e5e7eb}
+  .btn.warn{background:linear-gradient(180deg,#f59e0b,#d97706);border-color:#f59e0b55}
+  .btn.mini{padding:6px 10px;font-size:12px}
+  .counter{margin:14px 0 6px;color:#a1a1aa}
+
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .card{background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s transform,.2s box-shadow;position:relative}
+  .card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  .thumb{aspect-ratio:16/10;width:100%;object-fit:cover;background:#0c0e13}
+  .fav{position:absolute;top:8px;right:8px;background:#0008;border:1px solid #ffffff33;border-radius:999px;padding:6px;cursor:pointer}
+  .fav svg{width:20px;height:20px;display:block;fill:none;stroke:#fff}
+  .fav.active svg{fill:#ef4444;stroke:#ef4444}
+  .pad{padding:12px}
+  .line1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .price{font-weight:800}.muted{color:#9ca3af;font-size:12px}
+  .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:#0ea5e933;color:white;border:1px solid #38bdf855}
+  .seller{font-size:12px;color:#d1d5db;margin-top:6px}
+  .status{font-size:10px;padding:2px 6px;border-radius:999px;border:1px solid #fff2;background:#fff1;margin-left:6px}
+  footer{border-top:1px solid var(--border);margin-top:28px}.footer{color:#9ca3af;font-size:12px}
+
+  .backdrop{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal{width:100%;max-width:720px;background:linear-gradient(180deg,#0f1117,#0c0e13);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 40px #0008}
+  .tabs{display:flex;border-bottom:1px solid var(--border)}
+  .tab{flex:1;text-align:center;padding:12px;cursor:pointer}
+  .tab.active{background:#0e1016;font-weight:700}
+  .form{padding:16px;display:grid;gap:10px}
+  .grid2{display:grid;gap:10px}
+  @media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+  .row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 14px;border-radius:999px;display:none}
+  .toast.err{background:#dc2626}
+  .hint{font-size:12px;color:#a1a1aa}
+  .error{border-color:#ef4444!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;justify-content:space-between;gap:16px;align-items:center;">
+    <a href="index.html" class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Venddu</h1>
+        <div class="tagline">Busque, favorite e publique seus veículos</div>
+      </div>
+    </a>
+    <div class="right">
+      <button id="btnPublish" class="btn warn">Publicar</button>
+      <a href="account.html" class="btn secondary" id="btnAccountLink">Minha área</a>
+      <span id="welcome" class="pill" style="display:none"></span>
+      <button id="btnLogin" class="btn secondary">Entrar</button>
+      <button id="btnLogout" class="btn secondary" style="display:none">Sair</button>
+    </div>
+  </div>
+
+  <!-- Busca + Filtros + Ordenação -->
+  <div class="container">
+    <form id="searchForm" class="search" onsubmit="event.preventDefault();applyFilters();">
+      <div class="field" style="grid-column:1 / span 2">
+        <label for="q">O que você procura?</label>
+        <input id="q" placeholder="Ex.: Honda Civic, Corolla 2020, São Paulo..." />
+      </div>
+      <div class="field"><label for="brand">Marca</label><select id="brand"><option value="">Todas</option></select></div>
+      <div class="field"><label for="model">Modelo</label><input id="model" placeholder="Ex.: Civic, Corolla" /></div>
+      <div class="field"><label for="minYear">Ano mín.</label><input id="minYear" type="number" min="1980" max="2035" placeholder="2015" /></div>
+      <div class="field"><label for="maxYear">Ano máx.</label><input id="maxYear" type="number" min="1980" max="2035" placeholder="2024" /></div>
+      <div class="field"><label for="minKm">Km mín.</label><input id="minKm" type="number" min="0" step="1000" placeholder="0" /></div>
+      <div class="field"><label for="maxKm">Km máx.</label><input id="maxKm" type="number" min="0" step="1000" placeholder="100000" /></div>
+      <div class="field"><label for="minPrice">Preço mín. (R$)</label><input id="minPrice" type="number" step="1000" placeholder="30000" /></div>
+      <div class="field"><label for="maxPrice">Preço máx. (R$)</label><input id="maxPrice" type="number" step="1000" placeholder="120000" /></div>
+      <div class="field">
+        <label for="sortBy">Ordenar por</label>
+        <select id="sortBy">
+          <option value="recentes">Mais recentes</option>
+          <option value="preco_asc">Preço: menor → maior</option>
+          <option value="preco_desc">Preço: maior → menor</option>
+          <option value="km_asc">Km: menor → maior</option>
+          <option value="km_desc">Km: maior → menor</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn secondary" onclick="resetFilters()">Limpar</button>
+        <button type="submit" class="btn">Buscar</button>
+      </div>
+    </form>
+  </div>
+</header>
+
+<main class="container">
+  <div id="counter" class="counter"></div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<footer>
+  <div class="container footer">© <span id="year"></span> Venddu • Catálogo</div>
+</footer>
+
+<!-- Modal Auth + Cadastro -->
+<div id="authModal" class="backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="tabs">
+      <div id="tabLogin" class="tab active">Entrar</div>
+      <div id="tabRegister" class="tab">Cadastrar</div>
+    </div>
+
+    <!-- Entrar -->
+    <div id="loginPane" class="form">
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="voce@exemplo.com" /></div>
+      <div class="field"><label>Senha</label><input id="loginPassword" type="password" placeholder="••••••" /></div>
+      <button class="btn" onclick="handleLogin()">Entrar</button>
+      <div style="padding-top:4px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn secondary" style="flex:1" onclick="closeAuth()">Fechar</button>
+        <a class="btn secondary" style="flex:1;text-align:center" href="profile.html">Editar perfil</a>
+      </div>
+    </div>
+
+    <!-- Cadastrar -->
+    <div id="registerPane" class="form" style="display:none">
+      <div class="grid2">
+        <div class="field"><label>CPF *</label><input id="r_cpf" maxlength="14" placeholder="000.000.000-00" required /></div>
+        <div class="field"><label>Nome completo *</label><input id="r_nome" required placeholder="Seu nome e sobrenome" /></div>
+        <div class="field"><label>E-mail *</label><input id="r_email" type="email" required /></div>
+        <div class="field"><label>Telefone (DDD + número) *</label><input id="r_fone" maxlength="16" required placeholder="(11) 91234-5678" /></div>
+        <div class="field"><label>Gênero *</label>
+          <select id="r_genero" required>
+            <option value="">Selecione…</option>
+            <option>Masculino</option>
+            <option>Feminino</option>
+            <option>Prefiro não dizer</option>
+          </select>
+        </div>
+        <div class="field"><label>Apelido (público nos anúncios) *</label><input id="r_apelido" maxlength="30" required placeholder="Como você aparecerá" /></div>
+        <div class="field"><label>Data de nascimento *</label><input id="r_nasc" type="date" required /></div>
+        <div class="field"><label>CEP *</label><input id="r_cep" maxlength="9" placeholder="00000-000" required /></div>
+        <div class="field" style="grid-column:1 / span 2"><label>Rua *</label><input id="r_rua" required /></div>
+        <div class="row">
+          <div class="field"><label>Número *</label><input id="r_numero" required /></div>
+          <div class="field"><label>Complemento</label><input id="r_complemento" /></div>
+        </div>
+        <div class="field"><label>Bairro *</label><input id="r_bairro" required /></div>
+        <div class="row">
+          <div class="field"><label>Cidade *</label><input id="r_cidade" required /></div>
+          <div class="field"><label>Estado (UF) *</label><input id="r_uf" maxlength="2" required placeholder="SP" /></div>
+        </div>
+        <div class="field" style="grid-column:1 / span 2"><label>Crie uma senha *</label><input id="r_pass" type="password" required placeholder="mín. 6 caracteres" /></div>
+      </div>
+      <div class="hint">CPF e Nome não poderão ser alterados depois (apenas via suporte). Nos anúncios, exibimos apenas o <strong>Apelido</strong>.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" style="flex:1" onclick="handleRegister()">Criar conta</button>
+        <a class="btn secondary" style="flex:1;text-align:center" href="profile.html">Editar perfil</a>
+      </div>
+      <div style="padding-top:4px"><button class="btn secondary" style="width:100%" onclick="closeAuth()">Fechar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Publicar -->
+<div id="publishModal" class="backdrop" aria-hidden="true">
+  <div class="modal">
+    <div class="tabs"><div class="tab active" style="width:100%" id="pubTitle">Publicar anúncio</div></div>
+    <form id="publishForm" class="form" onsubmit="event.preventDefault();saveListing();">
+      <input type="hidden" id="editId" />
+      <div class="field"><label>Título</label><input id="p_title" required placeholder="Ex.: Honda Civic LXR 2016"/></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="field" style="flex:1"><label>Marca</label><input id="p_make" required placeholder="Honda"/></div>
+        <div class="field" style="flex:1"><label>Modelo</label><input id="p_model" required placeholder="Civic"/></div>
+        <div class="field" style="flex:1"><label>Versão</label><input id="p_version" placeholder="LXR 2.0"/></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="field" style="flex:1"><label>Ano</label><input id="p_year" type="number" required min="1980" max="2035" /></div>
+        <div class="field" style="flex:1"><label>Quilometragem</label><input id="p_km" type="number" required min="0" /></div>
+        <div class="field" style="flex:1"><label>Preço (R$)</label><input id="p_price" type="number" required step="100" min="500" /></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="field" style="flex:1"><label>Cidade</label><input id="p_city" required /></div>
+        <div class="field" style="flex:.6"><label>UF</label><input id="p_state" required maxlength="2" placeholder="SP"/></div>
+        <label class="pill" style="margin-bottom:8px"><input id="p_active" type="checkbox" checked/> Ativo</label>
+      </div>
+      <div class="field">
+        <label>Fotos (anexar até 6)</label>
+        <input id="p_photos" type="file" accept="image/*" multiple />
+        <div id="gallery" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="field"><label>Descrição</label><textarea id="p_desc" rows="3" placeholder="Detalhes do veículo"></textarea></div>
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <button class="btn" id="btnSave">Salvar</button>
+        <button type="button" class="btn secondary" onclick="closePublish()">Fechar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  /* ===== Config & Keys ===== */
+  const DAYS_VALID=60;
+  const MAX_ACTIVE_BY_USER=2;   // limite de ativos
+  const MAX_TOTAL_BY_USER=5;    // novo: limite total
+  const K_USERS="ac_users", K_SESSION="ac_session", K_LISTINGS="ac_listings", K_PROFILE="ac_user_profile";
+
+  /* ===== Seeds ===== */
+  const SEED = [
+    {id:"1", make:"Honda", model:"Civic", version:"LXR 2.0 Flex", year:2016, km:78000, price:69990, city:"São Paulo", state:"SP",
+     images:[], img:"https://images.unsplash.com/photo-1549924231-f129b911e442", desc:"Carro bem cuidado.", active:true, createdAt: Date.now()- 15*86400000, sellerNick:"Loja Parceira"},
+    {id:"2", make:"Toyota", model:"Corolla", version:"XEI 2.0", year:2020, km:42000, price:112900, city:"Campinas", state:"SP",
+     images:[], img:"https://images.unsplash.com/photo-1549923746-c502d488b3ea", desc:"Ótimo estado.", active:true, createdAt: Date.now()- 5*86400000, sellerNick:"Loja Parceira"},
+    {id:"3", make:"Volkswagen", model:"Gol", version:"1.6 MSI", year:2015, km:98000, price:38900, city:"Curitiba", state:"PR",
+     images:[], img:"https://images.unsplash.com/photo-1524070960454-8f07a0527e59", desc:"Econômico.", active:true, createdAt: Date.now()- 50*86400000, sellerNick:"Loja Parceira"}
+  ];
+
+  /* ===== Utils ===== */
+  const $=s=>document.querySelector(s);
+  const money=n=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const uid=p=>(p||"i_")+Math.random().toString(36).slice(2,8)+Date.now().toString(36);
+  const toast=(m,err=false)=>{const t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(()=>t.style.display="none",2200)};
+  const onlyDigits=v=>(v||"").replace(/\D/g,"");
+  const daysBetween=(a,b)=>Math.floor((b-a)/86400000);
+  const isExpired=it=>{const c=it.createdAt?Number(it.createdAt):Date.now();return daysBetween(c,Date.now())>DAYS_VALID}
+  const isActive=it=>it.active!==false && !isExpired(it)
+
+  /* ===== Auth ===== */
+  const loadUsers=()=>JSON.parse(localStorage.getItem(K_USERS)||"[]");
+  const saveUsers=u=>localStorage.setItem(K_USERS,JSON.stringify(u));
+  const currentUser=()=>{const id=localStorage.getItem(K_SESSION);return id? loadUsers().find(u=>u.id===id)||null : null}
+  const setSession=u=>u ? localStorage.setItem(K_SESSION,u.id) : localStorage.removeItem(K_SESSION);
+  function updateHeader(){const u=currentUser();const w=$("#welcome"),l=$("#btnLogin"),o=$("#btnLogout");if(u){w.style.display="inline-block";w.textContent=`Olá, ${u.name}`;l.style.display="none";o.style.display="inline-block"}else{w.style.display="none";l.style.display="inline-block";o.style.display="none"}}
+  function handleLogin(){const email=$("#loginEmail").value.trim().toLowerCase(),pass=$("#loginPassword").value;const u=loadUsers().find(x=>x.email===email&&x.password===pass);if(!u)return toast("Credenciais inválidas.",true);setSession(u);updateHeader();closeAuth();toast(`Bem-vindo, ${u.name}!`)}
+
+  /* ===== Cadastro ===== */
+  function cpfValido(cpf){
+    cpf=onlyDigits(cpf); if(cpf.length!==11) return false; if(/^(\d)\1+$/.test(cpf)) return false;
+    let s=0; for(let i=0;i<9;i++) s += parseInt(cpf[i])*(10-i); let d1=(s*10)%11; if(d1===10) d1=0; if(d1!==parseInt(cpf[9])) return false;
+    s=0; for(let i=0;i<10;i++) s += parseInt(cpf[i])*(11-i); let d2=(s*10)%11; if(d2===10) d2=0; return d2===parseInt(cpf[10]);
+  }
+  const foneValido=v=>{const d=onlyDigits(v);return d.length===10||d.length===11}
+  const emailValido=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v||"").trim());
+  function maior18(dateStr){const d=new Date(dateStr); if(isNaN(+d)) return false; const t=new Date(); let a=t.getFullYear()-d.getFullYear(); const m=t.getMonth()-d.getMonth(); if(m<0||(m===0&&t.getDate()<d.getDate())) a--; return a>=18}
+  const ufValida=v=>/^[A-Za-z]{2}$/.test((v||"").trim());
+
+  const maskCpf=el=>el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,11).replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d{1,2})$/,"$1-$2")});
+  const maskFone=el=>el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,11).replace(/^(\d{2})(\d)/,"($1) $2").replace(/(\d{5})(\d{4})$/,"$1-$2")});
+  const maskCep=el=>el.addEventListener("input",e=>{e.target.value=onlyDigits(e.target.value).slice(0,8).replace(/(\d{5})(\d{1,3})$/,"$1-$2")});
+
+  function getProfile(){ try{return JSON.parse(localStorage.getItem(K_PROFILE)||"null")}catch{return null} }
+  function saveProfile(p){ localStorage.setItem(K_PROFILE, JSON.stringify(p)) }
+
+  /* ===== Listings ===== */
+  const loadCreated=()=>JSON.parse(localStorage.getItem(K_LISTINGS)||"[]");
+  const saveCreated=a=>localStorage.setItem(K_LISTINGS,JSON.stringify(a));
+  const baseListings=()=>SEED.slice();
+  function allListings(){return [...baseListings(), ...loadCreated()]}
+
+  function firstImage(v){ if(v.images&&v.images.length) return v.images[0]; if(v.img) return v.img; return "https://images.unsplash.com/photo-1549924231-f129b911e442" }
+
+  // Helpers de limite por usuário
+  function getUserActiveCount(userId, excludeId=null){
+    const created = loadCreated().filter(x=>x.authorId===userId);
+    return created.filter(x=>{
+      if(excludeId && x.id===excludeId) return false;
+      return isActive(x);
+    }).length;
+  }
+  function getUserTotalCount(userId){
+    return loadCreated().filter(x=>x.authorId===userId).length;
+  }
+
+  const grid=$("#grid"), counter=$("#counter");
+  function brands(){return [...new Set(allListings().map(v=>v.make))].sort()}
+  function populateFilters(){const b=$("#brand"); b.innerHTML='<option value="">Todas</option>'; brands().forEach(x=>{const o=document.createElement("option");o.value=x;o.textContent=x;b.appendChild(o)})}
+
+  function cardHTML(v,isFav){
+    const seller = v.sellerNick ? `<div class="seller">Vendedor: <strong>${v.sellerNick}</strong></div>` : "";
+    const link = `listing.html?id=${encodeURIComponent(v.id)}`;
+    return `<a class="card" href="${link}">
+      <button type="button" class="fav ${isFav?'active':''}" title="${isFav?'Remover dos favoritos':'Favoritar'}" onclick="event.preventDefault();toggleFav('${v.id}')">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 21s-8-4.534-8-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6.466-8 11-8 11z"/></svg>
+      </button>
+      <img class="thumb" src="${firstImage(v)}" alt="${v.make} ${v.model}" onerror="this.src='https://images.unsplash.com/photo-1549924231-f129b911e442'"/>
+      <div class="pad">
+        <div class="line1">
+          <strong>${v.make} ${v.model} ${v.year}</strong>
+          <span class="badge">${v.city} • ${v.state}</span>
+        </div>
+        <div class="muted" style="margin-top:4px">${(v.version||'')} • ${(v.km||0).toLocaleString("pt-BR")} km ${!isActive(v)?'<span class="status">Expirado</span>':''}</div>
+        <div class="price" style="margin-top:6px">${money(v.price)}</div>
+        ${seller}
+      </div>
+    </a>`;
+  }
+
+  function applyFilters(){
+    const all = allListings().filter(isActive);
+    const q=$("#q").value.trim().toLowerCase(), brand=$("#brand").value, model=$("#model").value.trim().toLowerCase();
+    const minYear=Number($("#minYear").value)||0, maxYear=Number($("#maxYear").value)||9999;
+    const minKm=Number($("#minKm").value)||0, maxKm=Number($("#maxKm").value)||Infinity;
+    const minPrice=Number($("#minPrice").value)||0, maxPrice=Number($("#maxPrice").value)||Infinity;
+    const sortBy=$("#sortBy").value; const u=currentUser();
+    let res = all.filter(v=>{
+      const text=`${v.make} ${v.model} ${v.version||""} ${v.city} ${v.state} ${v.year}`.toLowerCase();
+      return (!q||text.includes(q)) && (!brand||v.make===brand) && (!model||(v.model||"").toLowerCase().includes(model)) &&
+             v.year>=minYear && v.year<=maxYear && (v.km||0)>=minKm && (v.km||0)<=maxKm &&
+             v.price>=minPrice && v.price<=maxPrice;
+    });
+    res.sort((a,b)=>{
+      if (sortBy==="preco_asc") return a.price-b.price;
+      if (sortBy==="preco_desc") return b.price-a.price;
+      if (sortBy==="km_asc") return (a.km||0)-(b.km||0);
+      if (sortBy==="km_desc") return (b.km||0)-(a.km||0);
+      const ca=+a.createdAt||0, cb=+b.createdAt||0; return cb-ca;
+    });
+    counter.textContent=`${res.length} veículo(s) encontrados`;
+    grid.innerHTML = res.map(v=>cardHTML(v, !!u && (u.favs||[]).includes(v.id))).join("") || `<div class="muted">Nenhum anúncio encontrado.</div>`;
+  }
+  function resetFilters(){["q","brand","model","minYear","maxYear","minKm","maxKm","minPrice","maxPrice"].forEach(id=>{$("#"+id).value=""});$("#sortBy").value="recentes";applyFilters()}
+
+  /* ===== Favoritos ===== */
+  window.toggleFav=function(id){
+    const u=currentUser(); if(!u){openAuth();switchAuth("login");toast("Entre para favoritar.",true);return}
+    const users=loadUsers(); const me=users.find(x=>x.id===u.id); me.favs=me.favs||[];
+    if(me.favs.includes(id)) me.favs=me.favs.filter(x=>x!==id); else me.favs.push(id);
+    saveUsers(users); applyFilters(); toast(me.favs.includes(id)?"Adicionado aos favoritos":"Removido dos favoritos");
+  }
+
+  /* ===== Publicar ===== */
+  let formImages=[];
+  function openPublish(edit=null){
+    const u=currentUser(); if(!u){openAuth();switchAuth("login");toast("Entre para publicar.",true);return}
+    const prof=getProfile();
+    if(!prof){ openAuth(); switchAuth("register"); toast("Complete seu cadastro para publicar.",true); return }
+
+    // Bloquear NOVO se já atingiu limite total
+    if(!edit){
+      const total = getUserTotalCount(u.id);
+      if(total >= MAX_TOTAL_BY_USER){
+        toast(`Você atingiu o limite total de ${MAX_TOTAL_BY_USER} anúncios.`, true);
+        return;
+      }
+      // Bloquear NOVO ativo se já tem 2 ativos
+      const activeCount = getUserActiveCount(u.id);
+      if(activeCount >= MAX_ACTIVE_BY_USER){
+        toast(`Limite de ${MAX_ACTIVE_BY_USER} anúncios ativos atingido.`, true);
+        // Ainda pode criar como inativo (desmarcando Ativo) se quiser liberar isso:
+        // return;
+      }
+    }
+
+    $("#publishModal").style.display="flex"; $("#publishForm").reset(); $("#editId").value=edit?edit.id:"";
+    $("#pubTitle").textContent=edit? "Editar anúncio" : "Publicar anúncio";
+    $("#p_active").checked = edit ? (edit.active!==false) : true;
+    formImages=[]; renderGallery();
+
+    if(edit){
+      $("#p_title").value=edit.title||`${edit.make} ${edit.model} ${edit.year}`;
+      $("#p_make").value=edit.make; $("#p_model").value=edit.model; $("#p_version").value=edit.version||"";
+      $("#p_year").value=edit.year; $("#p_km").value=edit.km||0; $("#p_price").value=edit.price;
+      $("#p_city").value=edit.city; $("#p_state").value=edit.state; $("#p_desc").value=edit.desc||"";
+      formImages = (edit.images&&edit.images.length? edit.images.slice(): []) || []; if(formImages.length===0 && edit.img) formImages=[edit.img];
+      renderGallery();
+    } else {
+      if(prof){ $("#p_city").value=prof.cidade||""; $("#p_state").value=(prof.uf||"").toUpperCase() }
+    }
+  }
+  function closePublish(){ $("#publishModal").style.display="none" }
+  $("#p_photos").addEventListener("change", async e=>{ const files=[...e.target.files].slice(0,6); for(const f of files){ if(!f.type.startsWith("image/")) continue; const b64=await fileToDataURL(f); formImages.push(b64) } formImages=formImages.slice(-6); renderGallery(); e.target.value="" });
+  const fileToDataURL=f=>new Promise((res,rej)=>{const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f)});
+  const renderGallery=()=>$("#gallery").innerHTML=formImages.length?formImages.map((src,i)=>`<div style="width:90px;height:70px;border:1px dashed #fff3;border-radius:10px;position:relative;overflow:hidden"><img src="${src}" style="width:100%;height:100%;object-fit:cover"/><button type="button" class="btn mini secondary" style="position:absolute;top:4px;right:4px" onclick="removeImg(${i})">X</button></div>`).join(""):`<div class="hint">Nenhuma foto anexada.</div>`;
+  window.removeImg=i=>{formImages.splice(i,1);renderGallery()}
+
+  function saveListing(){
+    const u=currentUser(); if(!u){toast("Entre para publicar.",true);return}
+    const prof=getProfile(); if(!prof){toast("Complete seu cadastro.",true);openAuth();switchAuth("register");return}
+
+    const isEdit = !!$("#editId").value;
+    const editingId = $("#editId").value || null;
+
+    if(isEdit){
+      const willBeActive = $("#p_active").checked !== false;
+      if(willBeActive){
+        const count = getUserActiveCount(u.id, editingId);
+        if(count >= MAX_ACTIVE_BY_USER){
+          toast(`Você já tem ${MAX_ACTIVE_BY_USER} anúncios ativos. Desative outro para ativar este.`, true);
+          return;
+        }
+      }
+    } else {
+      // NOVO: checar limite total antes de criar
+      const total = getUserTotalCount(u.id);
+      if(total >= MAX_TOTAL_BY_USER){
+        toast(`Limite total de ${MAX_TOTAL_BY_USER} anúncios atingido.`, true);
+        return;
+      }
+      const willBeActive = $("#p_active").checked !== false;
+      if(willBeActive){
+        const count = getUserActiveCount(u.id);
+        if(count >= MAX_ACTIVE_BY_USER){
+          toast(`Limite de ${MAX_ACTIVE_BY_USER} anúncios ativos atingido.`, true);
+          return;
+        }
+      }
+    }
+
+    const data={
+      id: $("#editId").value || uid("c_"),
+      make: $("#p_make").value.trim(), model: $("#p_model").value.trim(), version: $("#p_version").value.trim(),
+      year: Number($("#p_year").value), km: Number($("#p_km").value), price: Number($("#p_price").value),
+      city: $("#p_city").value.trim(), state: $("#p_state").value.trim().toUpperCase(),
+      images: formImages.slice(0,6), desc: $("#p_desc").value.trim(), title: $("#p_title").value.trim(),
+      authorId: u.id, sellerNick: (getProfile()?.apelido) || "Anunciante", sellerAvatar: (getProfile()?.avatar) || "",
+      active: $("#p_active").checked,
+      createdAt: $("#editId").value ? (loadCreated().find(x=>x.id===$("#editId").value)?.createdAt || Date.now()) : Date.now()
+    }
+
+    if(!data.make||!data.model||!data.year||!data.price||!data.city||!data.state){toast("Preencha os campos obrigatórios do anúncio.",true);return}
+
+    let created=loadCreated(); const idx=created.findIndex(x=>x.id===data.id);
+    if(idx>=0){ created[idx]={...created[idx],...data}; toast("Anúncio atualizado!") } else {
+      created.push(data); const users=loadUsers(); const me=users.find(x=>x.id===u.id); me.created=me.created||[]; me.created.push(data.id); saveUsers(users); toast("Anúncio publicado!")
+    }
+    saveCreated(created); closePublish(); populateFilters(); applyFilters();
+  }
+
+  /* ===== UI: Auth modal ===== */
+  function openAuth(){ $("#authModal").style.display="flex" } function closeAuth(){ $("#authModal").style.display="none" }
+  function switchAuth(which){ const isLogin=which==="login"; $("#tabLogin").classList.toggle("active",isLogin); $("#tabRegister").classList.toggle("active",!isLogin); $("#loginPane").style.display=isLogin?"grid":"none"; $("#registerPane").style.display=isLogin?"none":"grid" }
+
+  // máscaras nos campos de cadastro
+  [ "#r_cpf", "#r_fone", "#r_cep" ].forEach(sel=>{
+    const el=document.querySelector(sel);
+    if(sel==="#r_cpf") maskCpf(el);
+    if(sel==="#r_fone") maskFone(el);
+    if(sel==="#r_cep") maskCep(el);
+  });
+
+  /* ===== Wires ===== */
+  document.addEventListener("DOMContentLoaded", ()=>{
+  $("#tabLogin").addEventListener("click",()=>switchAuth("login"));
+  $("#tabRegister").addEventListener("click",()=>switchAuth("register"));
+  $("#btnLogin").addEventListener("click",()=>{switchAuth("login");openAuth()});
+  $("#btnLogout").addEventListener("click",()=>{ setSession(null); updateHeader(); toast("Você saiu."); applyFilters() });
+
+  // Ativa os botões Publicar e Publicar Agora
+  ["btnPublish","btnPublishNow"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener("click",()=>openPublish());
+  });
+
+  document.querySelectorAll("#searchForm input, #searchForm select").forEach(el=>el.addEventListener("input", applyFilters));
+  $("#year").textContent=new Date().getFullYear();
+  updateHeader();
+  populateFilters(); applyFilters();
+  });
+   (function(){
+    // Função que tenta abrir o modal de publicação localmente; se não houver, vai para index.html#publicar
+    const goPublish = () => {
+      try {
+        if (typeof openPublish === "function") { 
+          openPublish(); 
+          return;
+        }
+      } catch (e) {}
+      // fallback: abre o index com o hash para disparar o modal
+      window.location.href = "index.html#publicar";
+    };
+
+    // Liga os botões, se existirem na página
+    ["btnPublish", "btnPublishNow"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", goPublish);
+    });
+  })();
+</script>
+</body>
+</html>
